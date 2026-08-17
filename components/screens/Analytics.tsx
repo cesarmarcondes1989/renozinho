@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { css } from "@/lib/css";
-import { BRL, initials, margem, norm, thumbStyle } from "@/lib/helpers";
+import { BRL, initials, margem, thumbStyle } from "@/lib/helpers";
 import { CAT_PERF, CANAL_PERF, VENDAS_MES, CHAT_QA } from "@/lib/seed";
 import type { Ctx } from "@/lib/context";
 
@@ -36,20 +36,30 @@ export default function Analytics({ ctx }: { ctx: Ctx }) {
     .sort((a, b) => margem(b) - margem(a))
     .slice(0, 4);
 
-  const ask = (pergunta: string) => {
-    const hit =
-      CHAT_QA.find((q) => q.p === pergunta) ||
-      CHAT_QA.find((q) => norm(pergunta).split(" ").filter((w) => w.length > 3).some((w) => norm(q.p).includes(w)));
-    const resposta = hit
-      ? hit.r
-      : 'Consultei o banco e não achei um recorte claro para essa pergunta. Tente algo como "qual categoria vende mais", "o que está parado", "qual meu lucro no mês" ou "qual canal dá mais retorno".';
+  const ask = async (pergunta: string) => {
+    const historico = chat.slice(-6).map((m) => ({ eu: m.eu, texto: m.texto }));
     setChat((c) => c.concat({ eu: true, texto: pergunta }));
     setChatInput("");
     setChatPensando(true);
-    setTimeout(() => {
-      setChat((c) => c.concat({ eu: false, texto: resposta }));
+    try {
+      const resp = await fetch("/api/ai/chat-estoque", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pergunta, historico, produtos }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data?.error || "Falha ao consultar o estoque");
+      setChat((c) => c.concat({ eu: false, texto: data.resposta }));
+    } catch (err: any) {
+      setChat((c) =>
+        c.concat({
+          eu: false,
+          texto: err?.message || "Não consegui consultar o estoque agora. Tente de novo em instantes.",
+        })
+      );
+    } finally {
       setChatPensando(false);
-    }, 1100);
+    }
   };
 
   return (
@@ -175,7 +185,7 @@ export default function Analytics({ ctx }: { ctx: Ctx }) {
 
       <div style={css("display:flex;flex-direction:column;gap:11px")}>
         <div style={css("display:flex;align-items:baseline;justify-content:space-between;gap:8px")}>
-          <span style={css("font-size:13.5px;font-weight:800;letter-spacing:-.01em")}>Perguntar ao estoque (demo, respostas fixas)</span>
+          <span style={css("font-size:13.5px;font-weight:800;letter-spacing:-.01em")}>Perguntar ao estoque (IA)</span>
           <button
             onClick={() => {
               setChat([]);
@@ -190,7 +200,8 @@ export default function Analytics({ ctx }: { ctx: Ctx }) {
           {chat.length === 0 && (
             <div style={css("display:flex;flex-direction:column;gap:9px")}>
               <div style={css("font-size:12px;font-weight:500;color:#8B9186;line-height:1.6")}>
-                Pergunte em português. Este é um protótipo de chat com respostas pré-definidas (não é uma IA real).
+                Pergunte em português. As respostas vêm de uma IA (gpt-4o-mini) consultando os dados reais do
+                seu estoque e vendas.
               </div>
               <div style={css("display:flex;flex-direction:column;gap:6px")}>
                 {CHAT_QA.map((q) => (

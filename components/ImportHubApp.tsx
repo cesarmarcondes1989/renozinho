@@ -205,9 +205,9 @@ export default function ImportHubApp() {
       </div>
 
       <div style={css("width:100%;max-width:1180px;font-size:11.5px;font-weight:500;color:#5F655B;line-height:1.7")}>
-        Protótipo funcional. Análise de foto por IA, busca visual por foto e o chat de perguntas no Analytics são
-        simulados (dados mockados). CRUD no Supabase, cálculo de preço/margem, registro de vendas e baixa de estoque
-        são reais.
+        Protótipo funcional. Análise de foto, busca por foto, geração de anúncio e o chat de perguntas no
+        Analytics usam IA real via OpenAI (requer `OPENAI_API_KEY` no servidor — veja o README). CRUD no
+        Supabase, cálculo de preço/margem, registro de vendas e baixa de estoque são reais.
       </div>
     </div>
   );

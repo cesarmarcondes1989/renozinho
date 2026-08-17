@@ -21,7 +21,8 @@ dados/backend, pronto para deploy na Vercel.
 - **Analytics**: receita, lucro, ticket médio, giro, receita por mês,
   categorias por lucro, canais de venda, melhores margens e um chat
   "Perguntar ao estoque".
-- **Buscar por foto**: demonstração de busca visual por similaridade.
+- **Buscar por foto**: busca por similaridade usando IA real (descrição por
+  visão computacional + embeddings de texto).
 
 ### O que é real x o que é simulado
 
@@ -31,14 +32,33 @@ dados/backend, pronto para deploy na Vercel.
 | Cálculo de custo, margem, markup e sugestões de preço | ✅ Real (matemática pura) |
 | Registro de venda, cálculo de taxa de canal e lucro | ✅ Real |
 | Baixa de estoque (qtd e status ao vender) | ✅ Real |
-| Análise de foto por IA no wizard (passo "Analisando" + campos extraídos) | 🧪 Simulado — os campos vêm de um exemplo fixo, com um `setTimeout` para imitar o tempo de processamento |
-| Busca por foto (tela "Buscar por foto") | 🧪 Simulado — compara com uma lista fixa de resultados, não com um modelo de visão computacional real |
-| Chat "Perguntar ao estoque" no Analytics | 🧪 Simulado — respostas pré-escritas (perguntas e respostas fixas), não é uma IA real consultando o banco |
-| Geração de texto de anúncio | 🧪 Modelo de texto (template), não é geração por IA |
+| Análise de foto por IA no wizard (passo "Analisando" + campos extraídos) | ✅ IA real via OpenAI (`gpt-4o-mini`, visão) |
+| Busca por foto (tela "Buscar por foto") | ✅ IA real, com uma ressalva — veja abaixo |
+| Chat "Perguntar ao estoque" no Analytics | ✅ IA real via OpenAI (`gpt-4o-mini`), respondendo com base nos dados reais do seu estoque e vendas |
+| Geração de texto de anúncio | ✅ IA real via OpenAI (`gpt-4o-mini`) |
+
+> **Ressalva sobre "Buscar por foto"**: a busca não faz comparação visual
+> pixel a pixel / embedding de imagem. Ela usa o modelo de visão (`gpt-4o-mini`)
+> para *descrever em texto* o item da foto (tipo, marca, cor, material,
+> características) e depois compara essa descrição, via embeddings de texto
+> (`text-embedding-3-small`) e similaridade de cosseno, com uma descrição
+> equivalente gerada a partir dos campos de cada peça do seu estoque. Na
+> prática funciona bem para achar peças parecidas, mas é semelhança
+> textual/semântica derivada da visão, não uma busca visual de verdade.
+
+Todas as chamadas de IA acontecem em rotas de servidor
+(`app/api/ai/*/route.ts`) — a chave da OpenAI nunca é enviada ao navegador.
+Se `OPENAI_API_KEY` não estiver configurada, essas rotas retornam um erro
+amigável (`{"error": "OPENAI_API_KEY não configurada"}`, HTTP 503) e a
+interface mostra a mensagem no lugar do resultado, sem quebrar a tela — o
+resto do app (CRUD, vendas, cálculos) continua funcionando normalmente.
 
 Quando o app roda sem Supabase configurado, ele cai automaticamente para os
 dados de exemplo em memória (os mesmos do protótipo original), então nunca
-quebra por falta de variável de ambiente — só perde a persistência.
+quebra por falta de variável de ambiente — só perde a persistência. As fotos
+do wizard e da busca por foto também funcionam sem Supabase: nesse caso elas
+não ficam salvas em Storage, mas são enviadas para a IA como base64 (a
+análise continua funcionando).
 
 ## Como rodar localmente
 
@@ -59,9 +79,14 @@ há banco para persistir).
    `categories` e `sales`, com RLS liberado para leitura/escrita (uso
    individual, sem autenticação) e popula com os mesmos dados de exemplo do
    protótipo.
-3. Em **Project Settings → API**, copie a **Project URL** e a **anon public
+3. Em seguida rode `supabase/migrations/0002_ai_features.sql` — ele cria o
+   bucket de Storage `product-photos` (leitura pública, upload liberado) usado
+   pelas fotos do wizard e da busca por foto, e adiciona as colunas
+   `embedding`/`embedding_texto` em `products`, usadas como cache do
+   embedding de cada peça na busca por foto.
+4. Em **Project Settings → API**, copie a **Project URL** e a **anon public
    key**.
-4. Copie `.env.example` para `.env.local` e preencha:
+5. Copie `.env.example` para `.env.local` e preencha:
 
    ```bash
    cp .env.example .env.local
@@ -70,13 +95,30 @@ há banco para persistir).
    ```
    NEXT_PUBLIC_SUPABASE_URL=https://SEU-PROJETO.supabase.co
    NEXT_PUBLIC_SUPABASE_ANON_KEY=sua-anon-key-publica
+   OPENAI_API_KEY=sk-...
    ```
 
-5. Reinicie `npm run dev`. O app passa a ler e escrever direto no seu banco.
+6. Reinicie `npm run dev`. O app passa a ler e escrever direto no seu banco.
 
 > A `SUPABASE_SERVICE_ROLE_KEY` não é usada em nenhum lugar do app (todo o
 > acesso é feito pelo cliente com a anon key). Nunca coloque essa chave em uma
 > variável `NEXT_PUBLIC_*`.
+
+## Como configurar a OpenAI (recursos de IA)
+
+1. Crie uma chave em https://platform.openai.com/api-keys.
+2. Defina `OPENAI_API_KEY=sk-...` em `.env.local` (e, no deploy, nas
+   variáveis de ambiente do projeto na Vercel). **Nunca** use o prefixo
+   `NEXT_PUBLIC_` nessa variável — ela só é lida pelas rotas de servidor em
+   `app/api/ai/*`, nunca pelo navegador.
+3. Sem essa variável configurada, o app inteiro continua funcionando
+   normalmente — só os 4 recursos de IA (geração de anúncio, análise de foto,
+   busca por foto e chat do estoque) ficam desabilitados, mostrando uma
+   mensagem de erro amigável em vez de travar a tela.
+
+Modelos usados: `gpt-4o-mini` (chat + visão, para análise de foto, geração de
+anúncio, descrição da busca por foto e o chat do estoque) e
+`text-embedding-3-small` (embeddings de texto, para a busca por foto).
 
 ## Como fazer deploy na Vercel
 
@@ -88,6 +130,7 @@ há banco para persistir).
 3. Em **Environment Variables**, adicione:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `OPENAI_API_KEY`
 4. Clique em **Deploy**.
 
 ## Stack

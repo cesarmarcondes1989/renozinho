@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { css } from "@/lib/css";
 import { BRL, initials, margem, margemChipStyle, thumbStyle } from "@/lib/helpers";
 import { STATUS_META } from "@/lib/seed";
@@ -8,22 +9,43 @@ import type { Ctx } from "@/lib/context";
 export default function Peca({ ctx }: { ctx: Ctx }) {
   const { produtos, state, setState } = ctx;
   const sel = produtos.find((p) => p.id === state.selId) || produtos[0];
+  const [anuncio, setAnuncio] = useState("");
+  const [gerando, setGerando] = useState(false);
+  const [erroAnuncio, setErroAnuncio] = useState("");
   if (!sel) return null;
   const m = margem(sel);
   const stt = STATUS_META[sel.status];
 
-  const anuncio =
-    "✨ " +
-    sel.nome +
-    " — " +
-    sel.marca +
-    "\n\n" +
-    sel.descricao +
-    "\n\n📍 Pronta entrega · " +
-    BRL(sel.preco_venda) +
-    "\n💬 Chama no direct\n\n#importadosusa #" +
-    sel.marca.toLowerCase().replace(/[^a-z]/g, "") +
-    " #produtoimportado #pretaentrega";
+  const gerarAnuncio = async () => {
+    setState({ anuncio: true });
+    setGerando(true);
+    setErroAnuncio("");
+    setAnuncio("");
+    try {
+      const resp = await fetch("/api/ai/anuncio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nome: sel.nome,
+          marca: sel.marca,
+          categoria: sel.categoria,
+          cor: sel.cor,
+          tamanho: sel.tamanho,
+          condicao: sel.condicao,
+          preco: sel.preco_venda,
+          descricao: sel.descricao,
+          tags: sel.tags,
+        }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data?.error || "Falha ao gerar o anúncio");
+      setAnuncio(data.anuncio);
+    } catch (err: any) {
+      setErroAnuncio(err?.message || "Falha ao gerar o anúncio. Tente novamente.");
+    } finally {
+      setGerando(false);
+    }
+  };
 
   const custoLinhas = [
     { label: "Custo em dólar", valor: "US$ " + sel.custo_usd.toFixed(2), bold: false },
@@ -140,7 +162,7 @@ export default function Peca({ ctx }: { ctx: Ctx }) {
             Vender
           </button>
           <button
-            onClick={() => setState({ anuncio: true })}
+            onClick={gerarAnuncio}
             title="Gerar anúncio"
             style={css("width:56px;flex:none;background:#141613;border:1px solid #2E332B;color:#C6FF4F;border-radius:15px;font-size:16px;cursor:pointer")}
           >
@@ -161,21 +183,44 @@ export default function Peca({ ctx }: { ctx: Ctx }) {
             )}
           >
             <div style={css("display:flex;align-items:center;gap:8px")}>
-              <span style={css("font-size:11px;font-weight:800;color:#C6FF4F;letter-spacing:.05em")}>ANÚNCIO GERADO · INSTAGRAM (modelo de texto)</span>
+              <span style={css("font-size:11px;font-weight:800;color:#C6FF4F;letter-spacing:.05em")}>ANÚNCIO GERADO POR IA · GPT-4O-MINI</span>
             </div>
-            <div style={css("font-size:12.5px;font-weight:500;color:#D7DCD2;line-height:1.65;white-space:pre-line")}>{anuncio}</div>
+            {gerando && (
+              <div style={css("display:flex;align-items:center;gap:9px;padding:4px 2px")}>
+                <span style={css("width:15px;height:15px;border-radius:999px;border:2px solid #262A24;border-top-color:#C6FF4F;animation:ihspin .8s linear infinite")} />
+                <span style={css("font-size:11.5px;font-weight:600;color:#7E857A")}>gerando anúncio…</span>
+              </div>
+            )}
+            {erroAnuncio && (
+              <div style={css("background:rgba(255,107,90,.1);border:1px solid rgba(255,107,90,.35);border-radius:10px;padding:10px 12px;font-size:11.5px;font-weight:600;color:#FF9285;line-height:1.5")}>
+                {erroAnuncio}
+              </div>
+            )}
+            {!gerando && anuncio && (
+              <div style={css("font-size:12.5px;font-weight:500;color:#D7DCD2;line-height:1.65;white-space:pre-line")}>{anuncio}</div>
+            )}
             <div style={css("display:flex;gap:8px")}>
-              <button
-                onClick={() => {
-                  if (typeof navigator !== "undefined" && navigator.clipboard) {
-                    navigator.clipboard.writeText(anuncio).catch(() => {});
-                  }
-                  setState({ anuncio: false });
-                }}
-                style={css("flex:1;background:#C6FF4F;color:#0B0C0A;border:none;border-radius:12px;padding:12px;font-size:12.5px;font-weight:800;cursor:pointer")}
-              >
-                Copiar texto
-              </button>
+              {!gerando && anuncio && (
+                <button
+                  onClick={() => {
+                    if (typeof navigator !== "undefined" && navigator.clipboard) {
+                      navigator.clipboard.writeText(anuncio).catch(() => {});
+                    }
+                    setState({ anuncio: false });
+                  }}
+                  style={css("flex:1;background:#C6FF4F;color:#0B0C0A;border:none;border-radius:12px;padding:12px;font-size:12.5px;font-weight:800;cursor:pointer")}
+                >
+                  Copiar texto
+                </button>
+              )}
+              {erroAnuncio && !gerando && (
+                <button
+                  onClick={gerarAnuncio}
+                  style={css("flex:1;background:#141613;border:1px solid #2E332B;color:#B7BEB2;border-radius:12px;padding:12px;font-size:12.5px;font-weight:700;cursor:pointer")}
+                >
+                  Tentar de novo
+                </button>
+              )}
               <button
                 onClick={() => setState({ anuncio: false })}
                 style={css("background:none;border:1px solid #2E332B;color:#9AA096;border-radius:12px;padding:12px 14px;font-size:12.5px;font-weight:700;cursor:pointer")}
