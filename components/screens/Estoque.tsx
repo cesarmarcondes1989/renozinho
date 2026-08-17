@@ -1,7 +1,7 @@
 "use client";
 
 import { css } from "@/lib/css";
-import { BRL, diasParado, initials, margem, margemChipStyle, norm } from "@/lib/helpers";
+import { BRL, diasParado, initials, margem, margemChipStyle, norm, primeiraFoto } from "@/lib/helpers";
 import { CHIPS, STATUS_META } from "@/lib/seed";
 import type { Ctx } from "@/lib/context";
 import type { Produto } from "@/lib/types";
@@ -122,6 +122,7 @@ export default function Estoque({ ctx }: { ctx: Ctx }) {
         {list.map((p) => {
           const m = margem(p);
           const stt = STATUS_META[p.status];
+          const foto = primeiraFoto(p);
           return (
             <button
               key={p.id}
@@ -139,10 +140,16 @@ export default function Estoque({ ctx }: { ctx: Ctx }) {
                   }background:linear-gradient(150deg,hsl(${p.hue} 44% 36%),hsl(${(p.hue + 40) % 360} 34% 18%));display:flex;align-items:center;justify-content:center`
                 )}
               >
-                <span style={css("font-size:26px;font-weight:800;color:rgba(255,255,255,.5);letter-spacing:-.03em")}>{initials(p)}</span>
-                <span style={css("position:absolute;top:8px;left:8px;font-size:9.5px;font-weight:800;letter-spacing:.06em;color:rgba(255,255,255,.55);background:rgba(0,0,0,.35);border-radius:5px;padding:3px 5px")}>
-                  FOTO
-                </span>
+                {foto ? (
+                  <img src={foto} alt={p.nome} style={css("position:absolute;inset:0;width:100%;height:100%;object-fit:cover")} />
+                ) : (
+                  <>
+                    <span style={css("font-size:26px;font-weight:800;color:rgba(255,255,255,.5);letter-spacing:-.03em")}>{initials(p)}</span>
+                    <span style={css("position:absolute;top:8px;left:8px;font-size:9.5px;font-weight:800;letter-spacing:.06em;color:rgba(255,255,255,.55);background:rgba(0,0,0,.35);border-radius:5px;padding:3px 5px")}>
+                      FOTO
+                    </span>
+                  </>
+                )}
                 <span
                   style={css(
                     `position:absolute;bottom:8px;right:8px;font-size:9.5px;font-weight:800;letter-spacing:.03em;color:${stt.fg};background:rgba(8,9,6,.72);border-radius:6px;padding:4px 7px`

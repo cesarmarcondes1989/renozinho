@@ -2,19 +2,51 @@
 
 import { useState } from "react";
 import { css } from "@/lib/css";
-import { BRL, initials, margem, margemChipStyle, thumbStyle } from "@/lib/helpers";
+import { BRL, initials, margem, margemChipStyle, primeiraFoto } from "@/lib/helpers";
 import { STATUS_META } from "@/lib/seed";
+import { supabase } from "@/lib/supabase";
 import type { Ctx } from "@/lib/context";
+import EditarPeca from "./EditarPeca";
 
 export default function Peca({ ctx }: { ctx: Ctx }) {
-  const { produtos, state, setState } = ctx;
+  const { produtos, setProdutos, state, setState } = ctx;
   const sel = produtos.find((p) => p.id === state.selId) || produtos[0];
   const [anuncio, setAnuncio] = useState("");
   const [gerando, setGerando] = useState(false);
   const [erroAnuncio, setErroAnuncio] = useState("");
+  const [editando, setEditando] = useState(false);
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
+  const [erroExclusao, setErroExclusao] = useState("");
   if (!sel) return null;
   const m = margem(sel);
   const stt = STATUS_META[sel.status];
+  const foto = primeiraFoto(sel);
+
+  const excluir = async () => {
+    setExcluindo(true);
+    setErroExclusao("");
+    if (supabase) {
+      const { error } = await supabase.from("products").update({ arquivado: true }).eq("id", sel.id);
+      if (error) {
+        setErroExclusao("Não foi possível excluir no Supabase agora (a migração de arquivamento pode não ter sido aplicada ainda). A peça foi removida só desta sessão.");
+      }
+    }
+    setProdutos((prev) => prev.filter((p) => p.id !== sel.id));
+    setExcluindo(false);
+    setState({ view: "estoque" });
+  };
+
+  if (editando) {
+    return (
+      <EditarPeca
+        ctx={ctx}
+        sel={sel}
+        onCancel={() => setEditando(false)}
+        onSaved={() => setEditando(false)}
+      />
+    );
+  }
 
   const gerarAnuncio = async () => {
     setState({ anuncio: true });
@@ -75,9 +107,12 @@ export default function Peca({ ctx }: { ctx: Ctx }) {
         style={css(
           `position:relative;width:100%;aspect-ratio:1/1;background:linear-gradient(150deg,hsl(${sel.hue} 44% 34%),hsl(${
             (sel.hue + 40) % 360
-          } 32% 15%));display:flex;align-items:center;justify-content:center;flex:none`
+          } 32% 15%));display:flex;align-items:center;justify-content:center;flex:none;overflow:hidden`
         )}
       >
+        {foto && (
+          <img src={foto} alt={sel.nome} style={css("position:absolute;inset:0;width:100%;height:100%;object-fit:cover")} />
+        )}
         <button
           onClick={() => setState({ view: "estoque", anuncio: false })}
           style={css(
@@ -86,10 +121,58 @@ export default function Peca({ ctx }: { ctx: Ctx }) {
         >
           ‹
         </button>
-        <span style={css("font-size:56px;font-weight:800;color:rgba(255,255,255,.42);letter-spacing:-.04em")}>{initials(sel)}</span>
+        <div style={css("position:absolute;top:14px;right:14px;display:flex;gap:8px;z-index:2")}>
+          <button
+            onClick={() => setEditando(true)}
+            title="Editar peça"
+            style={css(
+              "width:38px;height:38px;border-radius:999px;background:rgba(8,9,6,.6);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);color:#F2F4EF;font-size:15px;cursor:pointer"
+            )}
+          >
+            ✎
+          </button>
+          <button
+            onClick={() => setConfirmandoExclusao(true)}
+            title="Excluir peça"
+            style={css(
+              "width:38px;height:38px;border-radius:999px;background:rgba(8,9,6,.6);backdrop-filter:blur(8px);border:1px solid rgba(255,107,90,.35);color:#FF9285;font-size:15px;cursor:pointer"
+            )}
+          >
+            ⌫
+          </button>
+        </div>
+        {!foto && (
+          <span style={css("font-size:56px;font-weight:800;color:rgba(255,255,255,.42);letter-spacing:-.04em")}>{initials(sel)}</span>
+        )}
       </div>
 
       <div style={css("padding:18px;display:flex;flex-direction:column;gap:18px")}>
+        {confirmandoExclusao && (
+          <div style={css("background:rgba(255,107,90,.08);border:1px solid rgba(255,107,90,.35);border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:11px;animation:ihslide .2s ease both")}>
+            <span style={css("font-size:13px;font-weight:800;color:#FF9285")}>Excluir esta peça?</span>
+            <span style={css("font-size:11.5px;font-weight:500;color:#E8B8AE;line-height:1.55")}>
+              A peça some do estoque e das buscas, mas o histórico de vendas dela é mantido. Tem certeza?
+            </span>
+            {erroExclusao && (
+              <span style={css("font-size:11px;font-weight:600;color:#FF9285;line-height:1.5")}>{erroExclusao}</span>
+            )}
+            <div style={css("display:flex;gap:8px")}>
+              <button
+                onClick={() => setConfirmandoExclusao(false)}
+                style={css("flex:1;background:#141613;border:1px solid #2E332B;color:#B7BEB2;border-radius:12px;padding:11px;font-size:12.5px;font-weight:700;cursor:pointer")}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={excluir}
+                disabled={excluindo}
+                style={css(`flex:1;background:#FF6B5A;color:#1A0906;border:none;border-radius:12px;padding:11px;font-size:12.5px;font-weight:800;cursor:pointer${excluindo ? ";opacity:.7" : ""}`)}
+              >
+                {excluindo ? "Excluindo…" : "Excluir peça"}
+              </button>
+            </div>
+          </div>
+        )}
         <div style={css("display:flex;flex-direction:column;gap:7px")}>
           <div style={css("display:flex;align-items:center;gap:8px")}>
             <span style={css("font-size:10.5px;font-weight:800;color:#7E857A;letter-spacing:.06em;text-transform:uppercase")}>{sel.marca}</span>

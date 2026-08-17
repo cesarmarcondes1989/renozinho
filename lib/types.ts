@@ -37,6 +37,8 @@ export interface Produto {
   descricao: string;
   tags: string[];
   variacoes: Variacao[];
+  fotos?: string[];
+  arquivado?: boolean;
 }
 
 export interface Categoria {

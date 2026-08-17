@@ -47,6 +47,8 @@ function rowToProduto(r: any): Produto {
     descricao: r.descricao,
     tags: r.tags ?? [],
     variacoes: r.variacoes ?? [],
+    fotos: r.fotos ?? [],
+    arquivado: r.arquivado ?? false,
   };
 }
 
@@ -70,7 +72,10 @@ export default function ImportHubApp() {
       ]);
       if (cancelled) return;
       if (!prodErr && prodRows && prodRows.length) {
-        setProdutos(prodRows.map(rowToProduto));
+        // `arquivado` may not exist yet if migration 0003 hasn't been applied
+        // — filter defensively in JS instead of relying on `.eq()` in the
+        // query above, so an older schema doesn't break the whole load.
+        setProdutos(prodRows.map(rowToProduto).filter((p) => !p.arquivado));
       }
       if (!catErr && catRows && catRows.length) {
         setCategorias(
@@ -102,6 +107,7 @@ export default function ImportHubApp() {
     produtos,
     setProdutos,
     categorias,
+    setCategorias,
     go,
     openPeca,
     supabaseConfigured,

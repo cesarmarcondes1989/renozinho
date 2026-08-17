@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import { css } from "@/lib/css";
-import { BRL, initials, thumbStyle } from "@/lib/helpers";
+import { BRL } from "@/lib/helpers";
+import Thumb from "@/components/Thumb";
 import { uploadPhoto } from "@/lib/upload";
 import type { Ctx } from "@/lib/context";
 
@@ -156,7 +157,7 @@ export default function BuscaFoto({ ctx }: { ctx: Ctx }) {
                   onClick={() => openPeca(p.id)}
                   style={css("display:flex;align-items:center;gap:12px;background:#141613;border:1px solid #262A24;border-radius:18px;padding:11px;cursor:pointer;text-align:left;color:#F2F4EF")}
                 >
-                  <span style={css(thumbStyle(p, 64))}>{initials(p)}</span>
+                  <Thumb p={p} size={64} radius={14} />
                   <span style={css("flex:1;min-width:0;display:flex;flex-direction:column;gap:3px")}>
                     <span style={css("display:flex;align-items:center;gap:7px")}>
                       <span style={css("font-size:10px;font-weight:800;color:#7E857A;letter-spacing:.05em;text-transform:uppercase")}>{p.marca}</span>

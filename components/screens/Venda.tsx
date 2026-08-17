@@ -1,7 +1,8 @@
 "use client";
 
 import { css } from "@/lib/css";
-import { BRL, initials, num, thumbStyle } from "@/lib/helpers";
+import { BRL, num } from "@/lib/helpers";
+import Thumb from "@/components/Thumb";
 import { CANAIS } from "@/lib/seed";
 import { supabase } from "@/lib/supabase";
 import type { Ctx } from "@/lib/context";
@@ -56,7 +57,7 @@ export default function Venda({ ctx }: { ctx: Ctx }) {
       </div>
 
       <div style={css("display:flex;gap:12px;align-items:center;background:#141613;border:1px solid #262A24;border-radius:16px;padding:12px")}>
-        <span style={css(thumbStyle(sel, 40))}>{initials(sel)}</span>
+        <Thumb p={sel} size={40} />
         <span style={css("flex:1;min-width:0;display:flex;flex-direction:column;gap:2px")}>
           <span style={css("font-size:13px;font-weight:700;letter-spacing:-.01em")}>{sel.nome}</span>
           <span style={css("font-size:11px;font-weight:500;color:#7E857A")}>

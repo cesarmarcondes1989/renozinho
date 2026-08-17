@@ -25,6 +25,11 @@ export function initials(p: Pick<Produto, "marca">): string {
     .join("");
 }
 
+/** First real photo URL for a product, if any was saved during cadastro/edição. */
+export function primeiraFoto(p: Pick<Produto, "fotos">): string | undefined {
+  return p.fotos && p.fotos.length ? p.fotos[0] : undefined;
+}
+
 export function thumbStyle(p: Pick<Produto, "hue">, size = 40): string {
   const s = size;
   return `width:${s}px;height:${s}px;flex:none;border-radius:11px;background:linear-gradient(150deg,hsl(${p.hue} 42% 34%),hsl(${(p.hue + 40) % 360} 34% 20%));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:rgba(255,255,255,.7)`;

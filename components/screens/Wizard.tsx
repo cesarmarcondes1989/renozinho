@@ -145,6 +145,7 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
       descricao,
       tags,
       variacoes: [{ label: campoValor("tamanho") || "Único", sku: "SKU-" + newId, qtd: 1 }],
+      fotos: fotos.map((f) => f.url),
     };
 
     if (supabase) {
@@ -178,6 +179,7 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
           descricao: novaPeca.descricao,
           tags: novaPeca.tags,
           variacoes: novaPeca.variacoes,
+          fotos: novaPeca.fotos,
         })
         .select()
         .single();

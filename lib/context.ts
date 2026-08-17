@@ -71,6 +71,7 @@ export interface Ctx {
   produtos: Produto[];
   setProdutos: React.Dispatch<React.SetStateAction<Produto[]>>;
   categorias: Categoria[];
+  setCategorias: React.Dispatch<React.SetStateAction<Categoria[]>>;
   go: (v: View) => void;
   openPeca: (id: number) => void;
   supabaseConfigured: boolean;

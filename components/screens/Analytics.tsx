@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { css } from "@/lib/css";
-import { BRL, initials, margem, thumbStyle } from "@/lib/helpers";
+import { BRL, margem } from "@/lib/helpers";
+import Thumb from "@/components/Thumb";
 import { CAT_PERF, CANAL_PERF, VENDAS_MES, CHAT_QA } from "@/lib/seed";
 import type { Ctx } from "@/lib/context";
 
@@ -172,7 +173,7 @@ export default function Analytics({ ctx }: { ctx: Ctx }) {
                 "width:100%;display:flex;align-items:center;gap:12px;padding:11px 14px;background:none;border:none;border-bottom:1px solid #1E211C;cursor:pointer;text-align:left;color:#F2F4EF"
               )}
             >
-              <span style={css(thumbStyle(p, 38))}>{initials(p)}</span>
+              <Thumb p={p} size={38} />
               <span style={css("flex:1;min-width:0;display:flex;flex-direction:column;gap:2px")}>
                 <span style={css("font-size:12.5px;font-weight:700;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap")}>{p.nome}</span>
                 <span style={css("font-size:10.5px;font-weight:600;color:#7E857A")}>lucro {BRL(p.preco_venda - p.custo_total)} por unidade</span>
