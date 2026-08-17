@@ -10,6 +10,12 @@ body {
   overscroll-behavior-y: none;
 }
 
+/*
+ * Default (pre-hydration / no-JS) body background & link colors follow the
+ * dark theme, since that's the app's primary brand identity — the in-app
+ * theme toggle (see lib/theme.ts) then re-themes everything once React
+ * mounts and reads the saved/system preference.
+ */
 body {
   margin: 0;
   background: #080906;
@@ -24,6 +30,19 @@ a {
 }
 a:hover {
   color: #ddff8c;
+}
+
+@media (prefers-color-scheme: light) {
+  body {
+    background: #fafaf7;
+    color: #14170f;
+  }
+  a {
+    color: #2563eb;
+  }
+  a:hover {
+    color: #3b82f6;
+  }
 }
 
 input,

@@ -1,4 +1,4 @@
-# Import Hub
+# Renozinho Muambeiro
 
 Protótipo funcional de um app de gestão de estoque e revenda para quem compra
 peças nos EUA (roupas, tênis, cosméticos, eletrônicos etc.) e revende no

@@ -2,13 +2,13 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Import Hub",
+  title: "Renozinho Muambeiro",
   description: "Gestão de estoque e revenda de peças importadas dos EUA para o Brasil.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Import Hub",
+    title: "Renozinho Muambeiro",
   },
 };
 

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { css } from "@/lib/css";
+import { useTheme } from "@/lib/theme";
 import { BRL, num } from "@/lib/helpers";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
 import { uploadPhoto } from "@/lib/upload";
@@ -38,6 +39,7 @@ const CAMPOS_LABELS: { key: string; label: string }[] = [
 ];
 
 export default function Wizard({ ctx }: { ctx: Ctx }) {
+  const { t } = useTheme();
   const { state, setState, setProdutos, produtos, go } = ctx;
   const { wz } = state;
   const [savedResumo, setSavedResumo] = useState("");
@@ -219,27 +221,27 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
           e.target.value = "";
         }}
       />
-      <div style={css("padding:16px 18px 12px;display:flex;flex-direction:column;gap:12px;border-bottom:1px solid #1E211C")}>
+      <div style={css(`padding:16px 18px 12px;display:flex;flex-direction:column;gap:12px;border-bottom:1px solid ${t.border}`)}>
         <div style={css("display:flex;align-items:center;gap:12px")}>
           <button
             onClick={() => (wz <= 1 ? go("home") : setState({ wz: wz - 1 }))}
-            style={css("width:36px;height:36px;flex:none;border-radius:999px;background:#141613;border:1px solid #2E332B;color:#F2F4EF;font-size:15px;cursor:pointer")}
+            style={css(`width:36px;height:36px;flex:none;border-radius:999px;background:${t.bgCard};border:1px solid ${t.borderStrong};color:${t.textPrimary};font-size:15px;cursor:pointer`)}
           >
             ‹
           </button>
           <span style={css("flex:1;font-size:14px;font-weight:800;letter-spacing:-.015em")}>{WIZ_TITLES[wz]}</span>
-          <span style={css("font-size:11px;font-weight:700;color:#7E857A")}>Passo {Math.min(wz, 4)} de 4</span>
+          <span style={css(`font-size:11px;font-weight:700;color:${t.textSecondary}`)}>Passo {Math.min(wz, 4)} de 4</span>
         </div>
         <div style={css("display:flex;gap:5px")}>
           {[1, 2, 3, 4].map((i) => (
-            <span key={i} style={css(`flex:1;height:4px;border-radius:9px;background:${wz >= i ? "#C6FF4F" : "#262A24"}`)} />
+            <span key={i} style={css(`flex:1;height:4px;border-radius:9px;background:${wz >= i ? t.accent : t.border}`)} />
           ))}
         </div>
       </div>
 
       {wz === 1 && (
         <div style={css("padding:18px;display:flex;flex-direction:column;gap:16px;animation:ihslide .24s ease both")}>
-          <div style={css("font-size:12.5px;font-weight:500;color:#8B9186;line-height:1.6")}>
+          <div style={css(`font-size:12.5px;font-weight:500;color:${t.textSecondary};line-height:1.6`)}>
             Frente, verso, etiqueta e defeito. Quanto mais ângulos, melhor a leitura da IA.
             {!supabaseConfigured && " Supabase não configurado: as fotos não ficam salvas entre sessões, mas a análise por IA continua funcionando normalmente."}
           </div>
@@ -252,13 +254,13 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
             {fotos.map((f, i) => (
               <div
                 key={i}
-                style={css("position:relative;aspect-ratio:3/4;border-radius:16px;overflow:hidden;background:#0E100D;display:flex;align-items:flex-end;justify-content:center;padding-bottom:9px")}
+                style={css(`position:relative;aspect-ratio:3/4;border-radius:16px;overflow:hidden;background:${t.bgCard};display:flex;align-items:flex-end;justify-content:center;padding-bottom:9px`)}
               >
                 <img src={f.url} alt={f.label} style={css("position:absolute;inset:0;width:100%;height:100%;object-fit:cover")} />
                 <span style={css("position:relative;font-size:10px;font-weight:800;letter-spacing:.06em;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.7)")}>{f.label}</span>
                 <button
                   onClick={() => removerFoto(i)}
-                  style={css("position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:999px;background:rgba(8,9,6,.65);color:#F2F4EF;font-size:11px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center")}
+                  style={css(`position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:999px;background:rgba(8,9,6,.65);color:${t.textPrimary};font-size:11px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center`)}
                 >
                   ×
                 </button>
@@ -269,7 +271,7 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
                 style={css(
-                  `aspect-ratio:3/4;border-radius:16px;background:#0E100D;border:1.5px dashed #34402A;color:#C6FF4F;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-size:12px;font-weight:700${
+                  `aspect-ratio:3/4;border-radius:16px;background:${t.bgCard};border:1.5px dashed #34402A;color:${t.accent};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-size:12px;font-weight:700${
                     uploading ? ";opacity:.6" : ""
                   }`
                 )}
@@ -281,7 +283,7 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading || fotos.length >= 4}
-            style={css("flex:1;background:#141613;border:1px solid #2E332B;color:#B7BEB2;border-radius:14px;padding:14px;font-size:12.5px;font-weight:700;cursor:pointer")}
+            style={css(`flex:1;background:${t.bgCard};border:1px solid ${t.borderStrong};color:${t.textBright};border-radius:14px;padding:14px;font-size:12.5px;font-weight:700;cursor:pointer`)}
           >
             Escolher da galeria
           </button>
@@ -289,7 +291,7 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
           <button
             onClick={analisar}
             disabled={uploading}
-            style={css("background:#C6FF4F;color:#0B0C0A;border:none;border-radius:16px;padding:17px;font-size:15px;font-weight:800;cursor:pointer")}
+            style={css(`background:${t.accent};color:${t.accentText};border:none;border-radius:16px;padding:17px;font-size:15px;font-weight:800;cursor:pointer`)}
           >
             Analisar {fotos.length || ""} fotos
           </button>
@@ -298,10 +300,10 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
 
       {wz === 2 && (
         <div style={css("padding:60px 26px;display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center")}>
-          <div style={css("width:64px;height:64px;border-radius:999px;border:3px solid #262A24;border-top-color:#C6FF4F;animation:ihspin .9s linear infinite")} />
+          <div style={css(`width:64px;height:64px;border-radius:999px;border:3px solid ${t.border};border-top-color:${t.accent};animation:ihspin .9s linear infinite`)} />
           <div style={css("display:flex;flex-direction:column;gap:6px")}>
             <div style={css("font-size:16px;font-weight:800;letter-spacing:-.02em")}>Lendo as fotos…</div>
-            <div style={css("font-size:12.5px;font-weight:500;color:#8B9186")}>Marca, tamanho, cor, condição e características.</div>
+            <div style={css(`font-size:12.5px;font-weight:500;color:${t.textSecondary}`)}>Marca, tamanho, cor, condição e características.</div>
           </div>
           <div style={css("width:100%;display:flex;flex-direction:column;gap:9px")}>
             {[70, 92, 54, 80].map((w, i) => (
@@ -327,25 +329,25 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
                 key={f.key}
                 style={css(
                   `display:flex;flex-direction:column;gap:5px;padding:12px 14px;border-radius:14px;background:${
-                    low ? "rgba(245,197,24,.07)" : "#141613"
-                  };border:1px solid ${low ? "rgba(245,197,24,.4)" : "#262A24"}`
+                    low ? "rgba(245,197,24,.07)" : t.bgCard
+                  };border:1px solid ${low ? "rgba(245,197,24,.4)" : t.border}`
                 )}
               >
                 <div style={css("display:flex;align-items:center;justify-content:space-between;gap:8px")}>
-                  <span style={css("font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#6E7469")}>{f.label}</span>
-                  <span style={css(`font-size:10px;font-weight:800;color:${low ? "#F5C518" : "#5F655B"}`)}>{Math.round(c.confianca * 100)}%</span>
+                  <span style={css(`font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:${t.textTertiary}`)}>{f.label}</span>
+                  <span style={css(`font-size:10px;font-weight:800;color:${low ? "#F5C518" : t.textTertiary}`)}>{Math.round(c.confianca * 100)}%</span>
                 </div>
                 <input
                   value={c.valor}
                   onChange={(e) => editarCampo(f.key, e.target.value)}
-                  style={css("background:none;border:none;outline:none;color:#F2F4EF;font-size:14px;font-weight:700;letter-spacing:-.01em;width:100%")}
+                  style={css(`background:none;border:none;outline:none;color:${t.textPrimary};font-size:14px;font-weight:700;letter-spacing:-.01em;width:100%`)}
                 />
               </div>
             );
           })}
           <button
             onClick={() => setState({ wz: 4 })}
-            style={css("background:#C6FF4F;color:#0B0C0A;border:none;border-radius:16px;padding:17px;font-size:15px;font-weight:800;cursor:pointer")}
+            style={css(`background:${t.accent};color:${t.accentText};border:none;border-radius:16px;padding:17px;font-size:15px;font-weight:800;cursor:pointer`)}
           >
             Confirmar e ir aos custos
           </button>
@@ -361,25 +363,25 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
               { label: "FRETE US$", key: "freteUsd" as const },
               { label: "OUTROS R$", key: "outros" as const },
             ].map((f) => (
-              <div key={f.key} style={css("background:#141613;border:1px solid #2E332B;border-radius:14px;padding:11px 13px;display:flex;flex-direction:column;gap:4px")}>
-                <span style={css("font-size:10px;font-weight:800;letter-spacing:.06em;color:#6E7469")}>{f.label}</span>
+              <div key={f.key} style={css(`background:${t.bgCard};border:1px solid ${t.borderStrong};border-radius:14px;padding:11px 13px;display:flex;flex-direction:column;gap:4px`)}>
+                <span style={css(`font-size:10px;font-weight:800;letter-spacing:.06em;color:${t.textTertiary}`)}>{f.label}</span>
                 <input
                   value={state[f.key]}
                   onChange={(e) => setState({ [f.key]: e.target.value } as any)}
-                  style={css("background:none;border:none;outline:none;color:#F2F4EF;font-size:17px;font-weight:800;width:100%;letter-spacing:-.02em")}
+                  style={css(`background:none;border:none;outline:none;color:${t.textPrimary};font-size:17px;font-weight:800;width:100%;letter-spacing:-.02em`)}
                 />
               </div>
             ))}
           </div>
 
           <div style={css("background:#101410;border:1px solid #2E3B22;border-radius:16px;padding:15px;display:flex;align-items:center;justify-content:space-between")}>
-            <span style={css("font-size:12px;font-weight:700;color:#9AA096")}>Custo total</span>
+            <span style={css(`font-size:12px;font-weight:700;color:${t.textTertiary}`)}>Custo total</span>
             <span style={css("font-size:22px;font-weight:800;letter-spacing:-.03em")}>{BRL(custoTotalCalc)}</span>
           </div>
 
-          <div style={css("background:#141613;border:1px solid #2E332B;border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:12px")}>
+          <div style={css(`background:${t.bgCard};border:1px solid ${t.borderStrong};border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:12px`)}>
             <div style={css("display:flex;align-items:center;justify-content:space-between;gap:10px")}>
-              <span style={css("font-size:11px;font-weight:800;letter-spacing:.06em;color:#6E7469")}>PREÇO DE VENDA R$</span>
+              <span style={css(`font-size:11px;font-weight:800;letter-spacing:.06em;color:${t.textTertiary}`)}>PREÇO DE VENDA R$</span>
               <span style={css(`font-size:11px;font-weight:800;color:${mLive < 0.2 ? "#FF6B5A" : "#7CE38B"};background:${mLive < 0.2 ? "rgba(255,107,90,.13)" : "rgba(124,227,139,.12)"};border-radius:7px;padding:3px 6px`)}>
                 margem {Math.round(mLive * 100)}%
               </span>
@@ -387,17 +389,17 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
             <input
               value={state.precoVenda}
               onChange={(e) => setState({ precoVenda: e.target.value })}
-              style={css("background:none;border:none;outline:none;color:#F2F4EF;font-size:28px;font-weight:800;letter-spacing:-.035em;width:100%")}
+              style={css(`background:none;border:none;outline:none;color:${t.textPrimary};font-size:28px;font-weight:800;letter-spacing:-.035em;width:100%`)}
             />
-            <div style={css("height:1px;background:#242822")} />
+            <div style={css(`height:1px;background:${t.border}`)} />
             <div style={css("display:flex;align-items:center;justify-content:space-between")}>
-              <span style={css("font-size:11.5px;font-weight:600;color:#8B9186")}>Markup</span>
+              <span style={css(`font-size:11.5px;font-weight:600;color:${t.textSecondary}`)}>Markup</span>
               <span style={css("font-size:12.5px;font-weight:800")}>
                 {custoTotalCalc > 0 ? Math.round((pv / custoTotalCalc - 1) * 100) + "%" : "—"}
               </span>
             </div>
             <div style={css("display:flex;align-items:center;justify-content:space-between")}>
-              <span style={css("font-size:11.5px;font-weight:600;color:#8B9186")}>Lucro por unidade</span>
+              <span style={css(`font-size:11.5px;font-weight:600;color:${t.textSecondary}`)}>Lucro por unidade</span>
               <span style={css(`font-size:12.5px;font-weight:800;color:${pv - custoTotalCalc <= 0 ? "#FF6B5A" : "#7CE38B"}`)}>
                 {BRL(Math.round(pv - custoTotalCalc))}
               </span>
@@ -405,7 +407,7 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
           </div>
 
           <div style={css("display:flex;flex-direction:column;gap:8px")}>
-            <span style={css("font-size:11px;font-weight:800;letter-spacing:.06em;color:#6E7469")}>SUGESTÕES (já com taxa do canal)</span>
+            <span style={css(`font-size:11px;font-weight:800;letter-spacing:.06em;color:${t.textTertiary}`)}>SUGESTÕES (já com taxa do canal)</span>
             <div style={css("display:flex;gap:8px")}>
               {[0.3, 0.5, 1].map((mgn) => {
                 const preco = Math.round((custoTotalCalc * (1 + mgn)) / (1 - 0.14));
@@ -413,10 +415,10 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
                   <button
                     key={mgn}
                     onClick={() => setState({ precoVenda: String(preco) })}
-                    style={css("flex:1;background:#0E100D;border:1px solid #2E332B;border-radius:14px;padding:12px 8px;display:flex;flex-direction:column;gap:3px;align-items:center;cursor:pointer")}
+                    style={css(`flex:1;background:${t.bgCard};border:1px solid ${t.borderStrong};border-radius:14px;padding:12px 8px;display:flex;flex-direction:column;gap:3px;align-items:center;cursor:pointer`)}
                   >
-                    <span style={css("font-size:10px;font-weight:800;color:#C6FF4F;letter-spacing:.04em")}>{Math.round(mgn * 100)}%</span>
-                    <span style={css("font-size:13.5px;font-weight:800;color:#F2F4EF;letter-spacing:-.02em")}>{BRL(preco)}</span>
+                    <span style={css(`font-size:10px;font-weight:800;color:${t.accent};letter-spacing:.04em`)}>{Math.round(mgn * 100)}%</span>
+                    <span style={css(`font-size:13.5px;font-weight:800;color:${t.textPrimary};letter-spacing:-.02em`)}>{BRL(preco)}</span>
                   </button>
                 );
               })}
@@ -425,7 +427,7 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
 
           <button
             onClick={salvar}
-            style={css("background:#C6FF4F;color:#0B0C0A;border:none;border-radius:16px;padding:17px;font-size:15px;font-weight:800;cursor:pointer")}
+            style={css(`background:${t.accent};color:${t.accentText};border:none;border-radius:16px;padding:17px;font-size:15px;font-weight:800;cursor:pointer`)}
           >
             Salvar peça
           </button>
@@ -436,14 +438,14 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
         <div style={css("padding:70px 26px;display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center")}>
           <div
             style={css(
-              "width:78px;height:78px;border-radius:999px;background:#C6FF4F;color:#0B0C0A;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;animation:ihpop .42s cubic-bezier(.2,1.4,.4,1) both"
+              `width:78px;height:78px;border-radius:999px;background:${t.accent};color:${t.accentText};display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;animation:ihpop .42s cubic-bezier(.2,1.4,.4,1) both`
             )}
           >
             ✓
           </div>
           <div style={css("display:flex;flex-direction:column;gap:6px")}>
             <div style={css("font-size:19px;font-weight:800;letter-spacing:-.025em")}>Peça salva</div>
-            <div style={css("font-size:12.5px;font-weight:500;color:#8B9186;line-height:1.6")}>
+            <div style={css(`font-size:12.5px;font-weight:500;color:${t.textSecondary};line-height:1.6`)}>
               {campoValor("nome") || "Peça"}
               <br />
               {savedResumo}
@@ -452,13 +454,13 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
           <div style={css("display:flex;flex-direction:column;gap:9px;width:100%;max-width:300px")}>
             <button
               onClick={resetWizard}
-              style={css("background:#C6FF4F;color:#0B0C0A;border:none;border-radius:15px;padding:15px;font-size:14px;font-weight:800;cursor:pointer")}
+              style={css(`background:${t.accent};color:${t.accentText};border:none;border-radius:15px;padding:15px;font-size:14px;font-weight:800;cursor:pointer`)}
             >
               Cadastrar outra
             </button>
             <button
               onClick={() => go("estoque")}
-              style={css("background:#141613;border:1px solid #2E332B;color:#B7BEB2;border-radius:15px;padding:15px;font-size:14px;font-weight:700;cursor:pointer")}
+              style={css(`background:${t.bgCard};border:1px solid ${t.borderStrong};color:${t.textBright};border-radius:15px;padding:15px;font-size:14px;font-weight:700;cursor:pointer`)}
             >
               Ver no estoque
             </button>

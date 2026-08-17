@@ -6,6 +6,7 @@ import { supabase, supabaseConfigured } from "@/lib/supabase";
 import { SEED_PRODUTOS, SEED_CATEGORIAS } from "@/lib/seed";
 import type { Produto, Categoria } from "@/lib/types";
 import { initialState, type AppState, type Ctx, type View } from "@/lib/context";
+import { ThemeContext, useTheme, useThemeState } from "@/lib/theme";
 
 import Home from "@/components/screens/Home";
 import Estoque from "@/components/screens/Estoque";
@@ -53,6 +54,16 @@ function rowToProduto(r: any): Produto {
 }
 
 export default function ImportHubApp() {
+  const themeState = useThemeState();
+  return (
+    <ThemeContext.Provider value={themeState}>
+      <ImportHubShell />
+    </ThemeContext.Provider>
+  );
+}
+
+function ImportHubShell() {
+  const { t, name, toggle } = useTheme();
   const [produtos, setProdutos] = useState<Produto[]>(SEED_PRODUTOS);
   const [categorias, setCategorias] = useState<Categoria[]>(SEED_CATEGORIAS);
   const [loaded, setLoaded] = useState(!supabaseConfigured);
@@ -129,10 +140,10 @@ export default function ImportHubApp() {
     return (
       <div
         style={css(
-          "height:100dvh;width:100vw;background:#080906;color:#F2F4EF;display:flex;align-items:center;justify-content:center"
+          `height:100dvh;width:100vw;background:${t.bg};color:${t.textPrimary};display:flex;align-items:center;justify-content:center`
         )}
       >
-        <span style={{ fontSize: 13, fontWeight: 700, color: "#7E857A" }}>Carregando…</span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: `${t.textSecondary}` }}>Carregando…</span>
       </div>
     );
   }
@@ -140,21 +151,31 @@ export default function ImportHubApp() {
   return (
     <div
       style={css(
-        "height:100dvh;width:100vw;background:#080906;color:#F2F4EF;display:flex;flex-direction:column;overflow:hidden;padding-top:env(safe-area-inset-top);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)"
+        `height:100dvh;width:100vw;background:${t.bg};color:${t.textPrimary};display:flex;flex-direction:column;overflow:hidden;padding-top:env(safe-area-inset-top);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)`
       )}
     >
       <div
         style={css(
-          "flex:none;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid #1E211C"
+          `flex:none;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid ${t.border}`
         )}
       >
         <div style={css("display:flex;align-items:baseline;gap:12px")}>
-          <span style={css("font-size:19px;font-weight:800;letter-spacing:-.02em")}>Import Hub</span>
-          <span style={css("font-size:11.5px;font-weight:500;color:#7E857A")}>
+          <span style={css("font-size:19px;font-weight:800;letter-spacing:-.02em")}>Renozinho Muambeiro</span>
+          <span style={css(`font-size:11.5px;font-weight:500;color:${t.textSecondary}`)}>
             Estoque e revenda de importados{" "}
             {!supabaseConfigured && "· dados de exemplo (Supabase não configurado)"}
           </span>
         </div>
+        <button
+          onClick={toggle}
+          title={name === "dark" ? "Ativar tema claro" : "Ativar tema escuro"}
+          aria-label={name === "dark" ? "Ativar tema claro" : "Ativar tema escuro"}
+          style={css(
+            `flex:none;width:36px;height:36px;border-radius:999px;background:${t.bgCard};border:1px solid ${t.border};color:${t.textPrimary};font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center`
+          )}
+        >
+          {name === "dark" ? "☀" : "☾"}
+        </button>
       </div>
 
       <div style={css("flex:1;min-height:0;display:flex;overflow:hidden")}>
@@ -173,7 +194,7 @@ export default function ImportHubApp() {
       {showTabBar && (
         <div
           style={css(
-            "flex:none;border-top:1px solid #1E211C;background:rgba(11,12,10,.96);backdrop-filter:blur(12px);padding:8px 10px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:4px"
+            `flex:none;border-top:1px solid ${t.border};background:${t.bg};backdrop-filter:blur(12px);padding:8px 10px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:4px`
           )}
         >
           {navDef.map((n) => {
@@ -184,8 +205,8 @@ export default function ImportHubApp() {
                 onClick={() => go(n.id)}
                 style={css(
                   `flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 2px;background:${
-                    on ? "#141613" : "none"
-                  };border:none;border-radius:14px;cursor:pointer;color:${on ? "#C6FF4F" : "#6E7469"}`
+                    on ? t.bgCard : "none"
+                  };border:none;border-radius:14px;cursor:pointer;color:${on ? t.accent : t.textTertiary}`
                 )}
               >
                 <span style={css("font-size:17px;line-height:1")}>{n.glyph}</span>
@@ -196,7 +217,9 @@ export default function ImportHubApp() {
           <button
             onClick={() => setState({ view: "wizard", wz: 1, fotos: 2, custoUsd: "10", cotacao: "5.42", freteUsd: "2", outros: "8", precoVenda: "100" })}
             style={css(
-              "width:58px;height:52px;flex:none;background:#C6FF4F;color:#0B0C0A;border:none;border-radius:16px;font-size:22px;font-weight:800;cursor:pointer;box-shadow:0 6px 20px rgba(198,255,79,.2)"
+              `width:58px;height:52px;flex:none;background:${t.accent};color:${t.accentText};border:none;border-radius:16px;font-size:22px;font-weight:800;cursor:pointer;box-shadow:0 6px 20px ${
+                name === "dark" ? "rgba(198,255,79,.2)" : "rgba(37,99,235,.25)"
+              }`
             )}
           >
             +
