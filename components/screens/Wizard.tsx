@@ -48,6 +48,8 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
   const [uploading, setUploading] = useState(false);
   const [analiseErro, setAnaliseErro] = useState("");
   const [analise, setAnalise] = useState<Analise | null>(null);
+  const [salvarErro, setSalvarErro] = useState("");
+  const [salvando, setSalvando] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const custoTotalCalc = Math.round((num(state.custoUsd) + num(state.freteUsd)) * num(state.cotacao) + num(state.outros));
@@ -151,7 +153,9 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
       fotos: fotos.map((f) => f.url),
     };
 
+    setSalvarErro("");
     if (supabase) {
+      setSalvando(true);
       const { data, error } = await supabase
         .from("products")
         .insert({
@@ -186,14 +190,22 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
         })
         .select()
         .single();
-      if (!error && data) {
-        setProdutos((prev) => [
-          ...prev,
-          { ...novaPeca, id: data.id, created_at: data.created_at ?? novaPeca.created_at },
-        ]);
-      } else {
-        setProdutos((prev) => [...prev, novaPeca]);
+      setSalvando(false);
+      if (error || !data) {
+        // Don't silently pretend it worked — an item that only lives in this
+        // tab's memory vanishes on the next reload with no trace, which is
+        // exactly the "peça sumiu" confusion this is meant to prevent.
+        setSalvarErro(
+          "Não foi possível salvar no banco de dados (" +
+            (error?.message || "erro desconhecido") +
+            "). A peça NÃO foi salva — tente de novo."
+        );
+        return;
       }
+      setProdutos((prev) => [
+        ...prev,
+        { ...novaPeca, id: data.id, created_at: data.created_at ?? novaPeca.created_at },
+      ]);
     } else {
       setProdutos((prev) => [...prev, novaPeca]);
     }
@@ -451,11 +463,26 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
             </div>
           </div>
 
+          {salvarErro && (
+            <div
+              style={css(
+                "background:rgba(255,107,90,.1);border:1px solid rgba(255,107,90,.35);color:#FF6B5A;border-radius:14px;padding:12px 14px;font-size:12px;font-weight:600;line-height:1.5"
+              )}
+            >
+              {salvarErro}
+            </div>
+          )}
+
           <button
             onClick={salvar}
-            style={css(`background:${t.accent};color:${t.accentText};border:none;border-radius:16px;padding:17px;font-size:15px;font-weight:800;cursor:pointer`)}
+            disabled={salvando}
+            style={css(
+              `background:${t.accent};color:${t.accentText};border:none;border-radius:16px;padding:17px;font-size:15px;font-weight:800;cursor:pointer;opacity:${
+                salvando ? 0.6 : 1
+              }`
+            )}
           >
-            Salvar peça
+            {salvando ? "Salvando…" : "Salvar peça"}
           </button>
         </div>
       )}

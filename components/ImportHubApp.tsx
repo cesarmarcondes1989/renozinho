@@ -82,13 +82,18 @@ function ImportHubShell() {
         supabase.from("categories").select("*").order("id"),
       ]);
       if (cancelled) return;
-      if (!prodErr && prodRows && prodRows.length) {
+      // Trust whatever the real database says — including a genuinely empty
+      // table — instead of silently keeping the hardcoded seed data forever
+      // when the query succeeds with zero rows. That silent fallback made a
+      // real (empty or out-of-sync) database indistinguishable from demo
+      // mode, which is exactly what caused "a peça que cadastrei sumiu".
+      if (!prodErr && prodRows) {
         // `arquivado` may not exist yet if migration 0003 hasn't been applied
         // — filter defensively in JS instead of relying on `.eq()` in the
         // query above, so an older schema doesn't break the whole load.
         setProdutos(prodRows.map(rowToProduto).filter((p) => !p.arquivado));
       }
-      if (!catErr && catRows && catRows.length) {
+      if (!catErr && catRows) {
         setCategorias(
           catRows.map((c: any) => ({ id: c.id, nome: c.nome, icone: c.icone, hue: c.hue, subs: c.subs ?? [] }))
         );

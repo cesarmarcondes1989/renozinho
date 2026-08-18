@@ -86,6 +86,10 @@ há banco para persistir).
    embedding de cada peça na busca por foto.
 4. Em **Project Settings → API**, copie a **Project URL** e a **anon public
    key**.
+5. (Opcional) Se quiser apagar os dados de exemplo e começar do zero, rode
+   `supabase/scripts/reset-database.sql` no SQL Editor — ele limpa todos os
+   registros de `products`, `categories` e `sales` (sem mexer na estrutura
+   das tabelas). É destrutivo e não tem volta.
 5. Copie `.env.example` para `.env.local` e preencha:
 
    ```bash
