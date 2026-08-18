@@ -8,13 +8,20 @@ import type { Ctx } from "@/lib/context";
 
 export default function Home({ ctx }: { ctx: Ctx }) {
   const { t } = useTheme();
-  const { produtos, setState, openPeca } = ctx;
+  const { produtos, vendas, setState, openPeca } = ctx;
 
   const ativos = produtos.filter((p) => p.status !== "vendido");
   const totalCusto = ativos.reduce((s, p) => s + p.custo_total * p.qtd, 0);
   const totalVenda = ativos.reduce((s, p) => s + p.preco_venda * p.qtd, 0);
   const totalPecas = produtos.reduce((s, p) => s + p.qtd, 0);
   const estoqueBaixo = produtos.filter((p) => p.qtd <= 1).length;
+
+  const agora = new Date();
+  const vendasMes = vendas.filter((v) => {
+    const d = new Date(v.vendido_em);
+    return d.getFullYear() === agora.getFullYear() && d.getMonth() === agora.getMonth();
+  });
+  const lucroMes = vendasMes.reduce((s, v) => s + Number(v.lucro), 0);
   const paradas = produtos
     .slice()
     .sort((a, b) => diasParado(b.created_at) - diasParado(a.created_at))
@@ -57,8 +64,10 @@ export default function Home({ ctx }: { ctx: Ctx }) {
         </div>
         <div style={css(`background:${t.bgCard};border:1px solid ${t.border};border-radius:18px;padding:16px 16px 18px;display:flex;flex-direction:column;gap:6px`)}>
           <div style={css(`font-size:11.5px;font-weight:600;color:${t.textSecondary}`)}>Lucro no mês</div>
-          <div style={css("font-size:26px;font-weight:800;letter-spacing:-.035em")}>{BRL(2870)}</div>
-          <div style={css("font-size:11px;font-weight:500;color:#7CE38B")}>7 vendas realizadas</div>
+          <div style={css("font-size:26px;font-weight:800;letter-spacing:-.035em")}>{BRL(lucroMes)}</div>
+          <div style={css("font-size:11px;font-weight:500;color:#7CE38B")}>
+            {vendasMes.length} {vendasMes.length === 1 ? "venda realizada" : "vendas realizadas"}
+          </div>
         </div>
         <div style={css(`background:${t.bgCard};border:1px solid #3A3320;border-radius:18px;padding:16px 16px 18px;display:flex;flex-direction:column;gap:6px`)}>
           <div style={css("font-size:11.5px;font-weight:600;color:#E8C766")}>Estoque baixo</div>
