@@ -151,7 +151,7 @@ function ImportHubShell() {
   return (
     <div
       style={css(
-        `height:100dvh;width:100vw;background:${t.bg};color:${t.textPrimary};display:flex;flex-direction:column;overflow:hidden;padding-top:env(safe-area-inset-top);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)`
+        `height:100dvh;width:100vw;background:${t.bg};color:${t.textPrimary};display:flex;flex-direction:column;overflow:hidden;padding-top:var(--safe-top);padding-left:var(--safe-left);padding-right:var(--safe-right)`
       )}
     >
       <div
@@ -194,7 +194,7 @@ function ImportHubShell() {
       {showTabBar && (
         <div
           style={css(
-            `flex:none;border-top:1px solid ${t.border};background:${t.bg};backdrop-filter:blur(12px);padding:8px 10px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:4px`
+            `flex:none;border-top:1px solid ${t.border};background:${t.bg};backdrop-filter:blur(12px);padding:8px 10px calc(10px + var(--safe-bottom));display:flex;align-items:center;gap:4px`
           )}
         >
           {navDef.map((n) => {

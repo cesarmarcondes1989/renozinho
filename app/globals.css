@@ -11,6 +11,29 @@ body {
 }
 
 /*
+ * When running inside a normal browser tab, the browser's own chrome
+ * (address bar, bottom toolbar) already reserves screen space, and
+ * `100dvh` already excludes it — so env(safe-area-inset-*) on top of that
+ * doubles up and leaves a big wasted gap. Only reserve real notch/home-
+ * indicator space once the app is installed and running edge-to-edge
+ * as a standalone PWA (display-mode: standalone / fullscreen).
+ */
+:root {
+  --safe-top: 0px;
+  --safe-bottom: 0px;
+  --safe-left: 0px;
+  --safe-right: 0px;
+}
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  :root {
+    --safe-top: env(safe-area-inset-top);
+    --safe-bottom: env(safe-area-inset-bottom);
+    --safe-left: env(safe-area-inset-left);
+    --safe-right: env(safe-area-inset-right);
+  }
+}
+
+/*
  * Default (pre-hydration / no-JS) body background & link colors follow the
  * dark theme, since that's the app's primary brand identity — the in-app
  * theme toggle (see lib/theme.ts) then re-themes everything once React
