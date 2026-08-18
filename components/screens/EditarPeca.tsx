@@ -313,6 +313,12 @@ export default function EditarPeca({
               );
             })}
           </div>
+          {form.status === "vendido" && (
+            <span style={css("font-size:11px;font-weight:600;color:#F5C518;line-height:1.5;margin-top:6px")}>
+              Marcar como vendido aqui só muda o status: não registra a venda, então não entra no lucro
+              do mês nem no Analytics. Para contabilizar, use “Vender” na ficha da peça.
+            </span>
+          )}
         </div>
 
         <span style={css(`font-size:11px;font-weight:800;letter-spacing:.06em;color:${t.textTertiary};margin-top:4px`)}>CUSTOS E PREÇO</span>

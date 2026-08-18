@@ -113,7 +113,7 @@ export default function Analytics({ ctx }: { ctx: Ctx }) {
           <div style={css(`font-size:12px;font-weight:500;color:${t.textSecondary};margin-top:3px`)}>Últimos 6 meses</div>
         </div>
         <div style={css(`font-size:11px;font-weight:700;color:${t.accent};background:${t.accentSoftBg};border:1px solid ${t.accentSoftBorder};border-radius:999px;padding:6px 11px`)}>
-          {anVendidas} vendidas
+          {anVendidas} {anVendidas === 1 ? "vendida" : "vendidas"}
         </div>
       </div>
 

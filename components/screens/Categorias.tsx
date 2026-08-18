@@ -44,9 +44,25 @@ export default function Categorias({ ctx }: { ctx: Ctx }) {
     const patch = { nome: novoNome, icone, subs };
 
     if (supabase && c.id != null) {
-      await supabase.from("categories").update(patch).eq("id", c.id);
+      const { error } = await supabase.from("categories").update(patch).eq("id", c.id);
+      if (error) {
+        setSalvando(false);
+        setErro((e) => ({ ...e, [c.nome]: "Não foi possível salvar no banco: " + error.message }));
+        return;
+      }
       if (novoNome !== c.nome) {
-        await supabase.from("products").update({ categoria: novoNome }).eq("categoria", c.nome);
+        const { error: erroProd } = await supabase
+          .from("products")
+          .update({ categoria: novoNome })
+          .eq("categoria", c.nome);
+        if (erroProd) {
+          setSalvando(false);
+          setErro((e) => ({
+            ...e,
+            [c.nome]: "Categoria renomeada, mas as peças continuaram na antiga: " + erroProd.message,
+          }));
+          return;
+        }
       }
     }
 
@@ -65,7 +81,11 @@ export default function Categorias({ ctx }: { ctx: Ctx }) {
       return;
     }
     if (supabase && c.id != null) {
-      await supabase.from("categories").delete().eq("id", c.id);
+      const { error } = await supabase.from("categories").delete().eq("id", c.id);
+      if (error) {
+        setErro((e) => ({ ...e, [c.nome]: "Não foi possível excluir no banco: " + error.message }));
+        return;
+      }
     }
     setCategorias((prev) => prev.filter((x) => x.nome !== c.nome));
     setEditandoNome(null);
@@ -88,7 +108,13 @@ export default function Categorias({ ctx }: { ctx: Ctx }) {
         .insert({ nome: nova.nome, icone: nova.icone, hue: nova.hue, subs: nova.subs })
         .select()
         .single();
-      if (!error && data) nova.id = data.id;
+      if (error || !data) {
+        // Sem isso a categoria aparecia na tela e sumia no próximo reload,
+        // porque nunca chegou ao banco.
+        setErro((e) => ({ ...e, __nova: "Não foi possível criar no banco: " + (error?.message || "erro desconhecido") }));
+        return;
+      }
+      nova.id = data.id;
     }
 
     setCategorias((prev) => [...prev, nova]);

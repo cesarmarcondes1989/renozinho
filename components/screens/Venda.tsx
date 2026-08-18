@@ -1,16 +1,21 @@
 "use client";
 
+import { useState } from "react";
 import { css } from "@/lib/css";
 import { useTheme } from "@/lib/theme";
 import { BRL, num } from "@/lib/helpers";
 import Thumb from "@/components/Thumb";
 import { CANAIS } from "@/lib/seed";
 import { supabase } from "@/lib/supabase";
+import { registrarVenda } from "@/lib/vendas";
 import type { Ctx } from "@/lib/context";
+import type { Venda as VendaRow } from "@/lib/types";
 
 export default function Venda({ ctx }: { ctx: Ctx }) {
   const { t } = useTheme();
-  const { produtos, setProdutos, vendas, setVendas, state, setState, go } = ctx;
+  const { produtos, setProdutos, setVendas, state, setState, go } = ctx;
+  const [erro, setErro] = useState("");
+  const [salvando, setSalvando] = useState(false);
   const sel = produtos.find((p) => p.id === state.selId) || produtos[0];
   if (!sel) return null;
 
@@ -30,7 +35,7 @@ export default function Venda({ ctx }: { ctx: Ctx }) {
     const novaQtd = Math.max(0, sel.qtd - 1);
     const novoStatus = novaQtd === 0 ? ("vendido" as const) : sel.status;
 
-    const novaVenda = {
+    let registrada: VendaRow = {
       product_id: sel.id,
       preco_final: vp,
       canal: state.canal,
@@ -39,14 +44,46 @@ export default function Venda({ ctx }: { ctx: Ctx }) {
       lucro: lucroVenda,
       categoria: sel.categoria,
       produto_nome: sel.nome,
+      vendido_em: new Date().toISOString(),
     };
 
     if (supabase) {
-      const { data } = await supabase.from("sales").insert(novaVenda).select().single();
-      await supabase.from("products").update({ qtd: novaQtd, status: novoStatus }).eq("id", sel.id);
-      setVendas((prev) => prev.concat(data ? (data as any) : { ...novaVenda, vendido_em: new Date().toISOString() }));
+      setSalvando(true);
+      setErro("");
+      // A venda é gravada ANTES de dar baixa no estoque, e só continua se der
+      // certo. Antes o erro do insert era descartado e a peça virava "Vendido"
+      // mesmo sem a venda existir — daí "peça vendida" com "0 vendas no mês".
+      const { data, error } = await registrarVenda(supabase, registrada);
+      if (error) {
+        setSalvando(false);
+        setErro(
+          "Não foi possível registrar a venda (" +
+            (error.message || "erro desconhecido") +
+            "). O estoque não foi alterado — tente de novo."
+        );
+        return;
+      }
+
+      const { error: erroBaixa } = await supabase
+        .from("products")
+        .update({ qtd: novaQtd, status: novoStatus })
+        .eq("id", sel.id);
+      setSalvando(false);
+      if (erroBaixa) {
+        setErro(
+          "A venda foi registrada, mas não consegui dar baixa no estoque (" +
+            erroBaixa.message +
+            "). Ajuste a quantidade na peça."
+        );
+        return;
+      }
+      if (data) registrada = data;
     }
 
+    // Fora do `if (supabase)`: antes o registro da venda em memória só
+    // acontecia com Supabase configurado, então no modo de demonstração a peça
+    // virava "Vendido" e o lucro do mês continuava zerado.
+    setVendas((prev) => prev.concat(registrada));
     setProdutos((prev) => prev.map((p) => (p.id === sel.id ? { ...p, qtd: novaQtd, status: novoStatus } : p)));
     go("home");
   };
@@ -121,11 +158,24 @@ export default function Venda({ ctx }: { ctx: Ctx }) {
         ))}
       </div>
 
+      {erro && (
+        <div
+          style={css(
+            "background:rgba(255,107,90,.1);border:1px solid rgba(255,107,90,.35);color:#FF6B5A;border-radius:14px;padding:12px 14px;font-size:12px;font-weight:600;line-height:1.5"
+          )}
+        >
+          {erro}
+        </div>
+      )}
+
       <button
         onClick={confirmarVenda}
-        style={css(`background:${t.accent};color:${t.accentText};border:none;border-radius:16px;padding:17px;font-size:15px;font-weight:800;cursor:pointer`)}
+        disabled={salvando}
+        style={css(
+          `background:${t.accent};color:${t.accentText};border:none;border-radius:16px;padding:17px;font-size:15px;font-weight:800;cursor:pointer;opacity:${salvando ? 0.6 : 1}`
+        )}
       >
-        Confirmar venda e baixar estoque
+        {salvando ? "Registrando…" : "Confirmar venda e baixar estoque"}
       </button>
     </div>
   );

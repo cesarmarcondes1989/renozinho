@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "tsc lib/vendas.ts lib/types.ts --outDir .test-build/lib --module esnext --target es2020 --moduleResolution bundler --skipLibCheck && node --test lib/*.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
