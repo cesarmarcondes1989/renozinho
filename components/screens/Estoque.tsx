@@ -66,27 +66,43 @@ export default function Estoque({ ctx }: { ctx: Ctx }) {
     <div style={css("display:flex;flex-direction:column;animation:ihslide .28s ease both")}>
       <div
         style={css(
-          `position:sticky;top:0;background:rgba(11,12,10,.94);backdrop-filter:blur(12px);border-bottom:1px solid ${t.border};padding:16px 18px 12px;display:flex;flex-direction:column;gap:12px;z-index:5`
+          `position:sticky;top:0;background:color-mix(in srgb,${t.bg} 94%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid ${t.border};padding:16px 18px 12px;display:flex;flex-direction:column;gap:12px;z-index:5`
         )}
       >
         <div style={css("display:flex;gap:9px;align-items:center")}>
-          <div style={css(`flex:1;display:flex;align-items:center;gap:9px;background:${t.bgCard};border:1px solid ${t.borderStrong};border-radius:14px;padding:0 13px;height:46px`)}>
-            <span style={css(`color:${t.textTertiary};font-size:14px`)}>⌕</span>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              (document.activeElement as HTMLElement | null)?.blur();
+            }}
+            style={css(`flex:1;display:flex;align-items:center;gap:9px;background:${t.bgCard};border:1px solid ${t.borderStrong};border-radius:14px;padding:0 13px;height:46px`)}
+          >
+            <button
+              type="submit"
+              title="Buscar"
+              aria-label="Buscar"
+              style={css(`background:none;border:none;color:${t.textTertiary};font-size:14px;cursor:pointer;padding:0;display:flex`)}
+            >
+              ⌕
+            </button>
             <input
               value={query}
               onChange={(e) => setState({ query: e.target.value })}
               placeholder="Buscar nome, marca, SKU, tag…"
+              type="search"
+              enterKeyHint="search"
               style={css(`flex:1;background:none;border:none;outline:none;color:${t.textPrimary};font-size:14px;font-weight:600;min-width:0`)}
             />
             {query.length > 0 && (
               <button
+                type="button"
                 onClick={() => setState({ query: "" })}
                 style={css(`background:${t.border};border:none;color:${t.textTertiary};width:22px;height:22px;border-radius:999px;cursor:pointer;font-size:12px`)}
               >
                 ×
               </button>
             )}
-          </div>
+          </form>
           <button
             onClick={() => setState({ view: "buscafoto", bfEstado: "camera" })}
             title="Buscar por foto"
