@@ -146,7 +146,19 @@ function ImportHubShell() {
     []
   );
   const activeNav = state.view === "peca" || state.view === "buscafoto" ? "estoque" : state.view;
-  const showTabBar = true;
+  const [menuAberto, setMenuAberto] = useState(false);
+  const menuItens = useMemo(() => [...navDef, { id: "wizard" as View, label: "Nova peça", glyph: "＋" }], [navDef]);
+  const irPara = useCallback(
+    (id: View) => {
+      setMenuAberto(false);
+      if (id === "wizard") {
+        setState({ view: "wizard", wz: 1, fotos: 2, custoUsd: "10", cotacao: "5.42", freteUsd: "2", outros: "8", precoVenda: "100" });
+      } else {
+        go(id);
+      }
+    },
+    [go, setState]
+  );
 
   if (!loaded) {
     return (
@@ -179,9 +191,19 @@ function ImportHubShell() {
           `flex:none;padding:9px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid ${t.border}`
         )}
       >
+        <button
+          onClick={() => setMenuAberto(true)}
+          title="Menu"
+          aria-label="Abrir menu"
+          style={css(
+            `flex:none;width:34px;height:34px;border-radius:10px;background:none;border:none;color:${t.textPrimary};font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-left:-6px`
+          )}
+        >
+          ☰
+        </button>
         <span
           style={css(
-            "font-size:17px;font-weight:800;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0"
+            "flex:1;font-size:17px;font-weight:800;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0"
           )}
         >
           Renozinho Muambeiro
@@ -209,7 +231,7 @@ function ImportHubShell() {
       )}
 
       <div style={css("flex:1;min-height:0;display:flex;overflow:hidden")}>
-        <div style={css("flex:1;min-width:0;overflow-y:auto")}>
+        <div style={css("flex:1;min-width:0;overflow-y:auto;padding-bottom:var(--safe-bottom)")}>
           {state.view === "home" && <Home ctx={ctx} />}
           {state.view === "estoque" && <Estoque ctx={ctx} />}
           {state.view === "peca" && <Peca ctx={ctx} />}
@@ -221,46 +243,50 @@ function ImportHubShell() {
         </div>
       </div>
 
-      {showTabBar && (
+      {/* Navegação em gaveta pelo hambúrguer, no lugar da barra fixa embaixo:
+          a barra custava 78px permanentes de tela; a gaveta custa zero quando
+          fechada. */}
+      {menuAberto && (
         <div
-          style={css(
-            // `max(7px, safe-bottom)` rather than `10px + safe-bottom`: the home
-            // indicator inset already provides the breathing room, so adding a
-            // fixed gap on top of it just wastes another 10px, the way native
-            // iOS tab bars don't.
-            `flex:none;border-top:1px solid ${t.border};background:${t.bg};backdrop-filter:blur(12px);padding:4px 6px max(6px,var(--safe-bottom));display:flex;align-items:stretch;gap:2px`
-          )}
+          onClick={() => setMenuAberto(false)}
+          style={css("position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;display:flex;animation:ihfade .18s ease both")}
         >
-          {/* Five flat, equal-width tabs. The oversized "+" pill and the card
-              background behind the active tab used to force the bar ~15px
-              taller than the tallest label needs. */}
-          {[...navDef, { id: "wizard" as View, label: "Nova", glyph: "＋" }].map((n) => {
-            const on = n.id === "wizard" ? state.view === "wizard" : activeNav === n.id;
-            return (
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={css(
+              `width:min(78vw,290px);background:${t.bg};border-right:1px solid ${t.border};display:flex;flex-direction:column;padding:calc(12px + var(--safe-top)) 12px calc(12px + var(--safe-bottom));gap:4px;animation:ihdrawer .22s cubic-bezier(.2,.8,.3,1) both`
+            )}
+          >
+            <div style={css("display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 6px 10px")}>
+              <span style={css("font-size:15px;font-weight:800;letter-spacing:-.02em")}>Menu</span>
               <button
-                key={n.id}
-                onClick={() =>
-                  n.id === "wizard"
-                    ? setState({ view: "wizard", wz: 1, fotos: 2, custoUsd: "10", cotacao: "5.42", freteUsd: "2", outros: "8", precoVenda: "100" })
-                    : go(n.id)
-                }
+                onClick={() => setMenuAberto(false)}
+                aria-label="Fechar menu"
                 style={css(
-                  `flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 1px;background:none;border:none;cursor:pointer;color:${
-                    on ? t.accent : t.textTertiary
-                  }`
+                  `width:30px;height:30px;border-radius:999px;background:${t.bgCard};border:1px solid ${t.border};color:${t.textSecondary};font-size:14px;cursor:pointer`
                 )}
               >
-                <span style={css("font-size:17px;line-height:1")}>{n.glyph}</span>
-                <span
+                ×
+              </button>
+            </div>
+            {menuItens.map((n) => {
+              const on = n.id === "wizard" ? state.view === "wizard" : activeNav === n.id;
+              return (
+                <button
+                  key={n.id}
+                  onClick={() => irPara(n.id)}
                   style={css(
-                    `font-size:9.5px;font-weight:${on ? 800 : 600};letter-spacing:.01em;line-height:1.1;white-space:nowrap`
+                    `display:flex;align-items:center;gap:12px;padding:13px 12px;border-radius:12px;cursor:pointer;text-align:left;font-size:14px;font-weight:700;background:${
+                      on ? t.bgCard : "none"
+                    };border:1px solid ${on ? t.borderStrong : "transparent"};color:${on ? t.accent : t.textBright}`
                   )}
                 >
+                  <span style={css("font-size:17px;width:22px;text-align:center")}>{n.glyph}</span>
                   {n.label}
-                </span>
-              </button>
-            );
-          })}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
