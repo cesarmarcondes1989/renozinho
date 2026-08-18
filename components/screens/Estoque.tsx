@@ -6,6 +6,7 @@ import { BRL, diasParado, initials, margem, margemChipStyle, norm, primeiraFoto 
 import { CHIPS, STATUS_META } from "@/lib/seed";
 import type { Ctx } from "@/lib/context";
 import type { Produto } from "@/lib/types";
+import { GENEROS } from "@/lib/types";
 
 const SORTS = [
   { id: "recente", label: "Recentes", cmp: (a: Produto, b: Produto) => diasParado(a.created_at) - diasParado(b.created_at) },
@@ -16,8 +17,8 @@ const SORTS = [
 
 export default function Estoque({ ctx }: { ctx: Ctx }) {
   const { t } = useTheme();
-  const { produtos, state, setState, openPeca } = ctx;
-  const { query, chips, sort, mode } = state;
+  const { produtos, categorias, state, setState, openPeca } = ctx;
+  const { query, chips, filtroCategoria, filtroGenero, sort, mode } = state;
 
   const q = norm(query);
   let list = produtos.filter((p) => {
@@ -25,6 +26,8 @@ export default function Estoque({ ctx }: { ctx: Ctx }) {
       const hay = norm([p.nome, p.marca, p.descricao, p.sku, p.local, p.categoria, (p.tags || []).join(" ")].join(" "));
       if (!hay.includes(q) && !q.split(" ").every((t) => hay.includes(t))) return false;
     }
+    if (filtroCategoria && p.categoria !== filtroCategoria) return false;
+    if (filtroGenero && p.genero !== filtroGenero) return false;
     const selected = chips.map((id) => CHIPS.find((c) => c.id === id)!);
     const byGroup = new Map<string, typeof selected>();
     for (const c of selected) {
@@ -77,6 +80,40 @@ export default function Estoque({ ctx }: { ctx: Ctx }) {
           >
             {grid ? "▤" : "▦"}
           </button>
+        </div>
+        <div style={css("display:flex;gap:7px")}>
+          <select
+            value={filtroCategoria}
+            onChange={(e) => setState({ filtroCategoria: e.target.value })}
+            style={css(
+              `flex:1;min-width:0;background:${t.bgCard};border:1px solid ${filtroCategoria ? t.accent : t.borderStrong};color:${
+                filtroCategoria ? t.accent : t.textBright
+              };border-radius:12px;padding:9px 10px;font-size:11.5px;font-weight:700;cursor:pointer`
+            )}
+          >
+            <option value="">Todas as categorias</option>
+            {categorias.map((c) => (
+              <option key={c.nome} value={c.nome}>
+                {c.nome}
+              </option>
+            ))}
+          </select>
+          <select
+            value={filtroGenero}
+            onChange={(e) => setState({ filtroGenero: e.target.value })}
+            style={css(
+              `flex:1;min-width:0;background:${t.bgCard};border:1px solid ${filtroGenero ? t.accent : t.borderStrong};color:${
+                filtroGenero ? t.accent : t.textBright
+              };border-radius:12px;padding:9px 10px;font-size:11.5px;font-weight:700;cursor:pointer`
+            )}
+          >
+            <option value="">Todos os gêneros</option>
+            {GENEROS.map((g) => (
+              <option key={g} value={g}>
+                {g}
+              </option>
+            ))}
+          </select>
         </div>
         <div style={css("display:flex;gap:7px;overflow-x:auto;padding-bottom:2px")}>
           {CHIPS.map((c) => {
@@ -189,7 +226,7 @@ export default function Estoque({ ctx }: { ctx: Ctx }) {
           <div style={css("font-size:14px;font-weight:700")}>Nada encontrado</div>
           <div style={css(`font-size:12px;color:${t.textSecondary};max-width:240px;line-height:1.5`)}>Tente outra palavra ou limpe os filtros ativos.</div>
           <button
-            onClick={() => setState({ chips: [], query: "" })}
+            onClick={() => setState({ chips: [], query: "", filtroCategoria: "", filtroGenero: "" })}
             style={css(`margin-top:6px;background:${t.bgCard};border:1px solid ${t.borderStrong};color:${t.accent};border-radius:12px;padding:10px 16px;font-size:12.5px;font-weight:700;cursor:pointer`)}
           >
             Limpar filtros

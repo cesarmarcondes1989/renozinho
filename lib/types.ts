@@ -1,5 +1,10 @@
 export type StatusPeca = "disponivel" | "reservado" | "em_transito" | "vendido";
 
+// Gênero é um campo próprio, independente da categoria: faixa etária (ex.
+// "infantil") é modelada na categoria ("Roupa Infantil"), não aqui.
+export type Genero = "Feminino" | "Masculino" | "Ambos" | "Unissex";
+export const GENEROS: Genero[] = ["Feminino", "Masculino", "Ambos", "Unissex"];
+
 export interface Variacao {
   label: string;
   sku: string;
@@ -16,7 +21,7 @@ export interface Produto {
   tamanho: string;
   sistema: string;
   material: string;
-  genero: string;
+  genero: Genero;
   condicao: string;
   custo_usd: number;
   frete_usd: number;

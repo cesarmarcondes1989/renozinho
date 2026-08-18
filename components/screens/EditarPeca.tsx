@@ -7,7 +7,8 @@ import { num } from "@/lib/helpers";
 import { supabase } from "@/lib/supabase";
 import { uploadPhoto } from "@/lib/upload";
 import type { Ctx } from "@/lib/context";
-import type { Produto, Variacao } from "@/lib/types";
+import type { Produto, Variacao, Genero } from "@/lib/types";
+import { GENEROS } from "@/lib/types";
 
 const STATUS_OPTS: { v: Produto["status"]; label: string }[] = [
   { v: "disponivel", label: "Disponível" },
@@ -94,6 +95,29 @@ const campo = (
   </div>
 );
 
+const selectCampo = (
+  t: ThemeTokens,
+  label: string,
+  value: string,
+  onChange: (v: string) => void,
+  options: string[]
+) => (
+  <div key={label} style={css(`display:flex;flex-direction:column;gap:5px;padding:12px 14px;border-radius:14px;background:${t.bgCard};border:1px solid ${t.border}`)}>
+    <span style={css(`font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:${t.textTertiary}`)}>{label}</span>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      style={css(`background:none;border:none;outline:none;color:${t.textPrimary};font-size:13.5px;font-weight:700;letter-spacing:-.01em;width:100%`)}
+    >
+      {options.map((o) => (
+        <option key={o} value={o}>
+          {o}
+        </option>
+      ))}
+    </select>
+  </div>
+);
+
 export default function EditarPeca({
   ctx,
   sel,
@@ -154,7 +178,7 @@ export default function EditarPeca({
       cor: form.cor,
       tamanho: form.tamanho,
       material: form.material,
-      genero: form.genero,
+      genero: (GENEROS.includes(form.genero as Genero) ? form.genero : "Unissex") as Genero,
       condicao: form.condicao,
       custo_usd: num(form.custo_usd),
       frete_usd: num(form.frete_usd),
@@ -251,29 +275,22 @@ export default function EditarPeca({
         </div>
         <div style={css("display:grid;grid-template-columns:1fr 1fr;gap:10px")}>
           {campo(t, "Marca", form.marca, setField("marca"))}
-          <div style={css(`display:flex;flex-direction:column;gap:5px;padding:12px 14px;border-radius:14px;background:${t.bgCard};border:1px solid ${t.border}`)}>
-            <span style={css(`font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:${t.textTertiary}`)}>Categoria</span>
-            <input
-              value={form.categoria}
-              onChange={(e) => setField("categoria")(e.target.value)}
-              list="editar-peca-categorias"
-              style={css(`background:none;border:none;outline:none;color:${t.textPrimary};font-size:13.5px;font-weight:700;letter-spacing:-.01em;width:100%`)}
-            />
-            <datalist id="editar-peca-categorias">
-              {categorias.map((c) => (
-                <option key={c.nome} value={c.nome} />
-              ))}
-            </datalist>
-          </div>
+          {campo(t, "Condição", form.condicao, setField("condicao"))}
+        </div>
+        <div style={css("display:grid;grid-template-columns:1fr 1fr;gap:10px")}>
+          {selectCampo(
+            t,
+            "Categoria",
+            categorias.some((c) => c.nome === form.categoria) ? form.categoria : "",
+            setField("categoria"),
+            categorias.map((c) => c.nome)
+          )}
+          {selectCampo(t, "Gênero", form.genero, setField("genero"), GENEROS)}
         </div>
         <div style={css("display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px")}>
           {campo(t, "Cor", form.cor, setField("cor"))}
           {campo(t, "Tamanho", form.tamanho, setField("tamanho"))}
           {campo(t, "Material", form.material, setField("material"))}
-        </div>
-        <div style={css("display:grid;grid-template-columns:1fr 1fr;gap:10px")}>
-          {campo(t, "Gênero", form.genero, setField("genero"))}
-          {campo(t, "Condição", form.condicao, setField("condicao"))}
         </div>
 
         <div style={css(`display:flex;flex-direction:column;gap:5px;padding:12px 14px;border-radius:14px;background:${t.bgCard};border:1px solid ${t.border}`)}>

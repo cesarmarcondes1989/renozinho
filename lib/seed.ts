@@ -1,4 +1,4 @@
-import type { Produto, Categoria } from "./types";
+import type { Produto, Categoria, Genero } from "./types";
 
 // Data ported 1:1 from the original Claude Design prototype (PRODUTOS/CATEGORIAS).
 // `dias` from the prototype is converted into a `created_at` date so that
@@ -21,7 +21,7 @@ function mk(o: {
   tamanho: string;
   sistema: string;
   material: string;
-  genero: string;
+  genero: Genero;
   condicao: string;
   custoUsd: number;
   freteUsd: number;
@@ -76,7 +76,7 @@ function mk(o: {
 }
 
 export const SEED_PRODUTOS: Produto[] = [
-  mk({ id: 1, nome: "Camiseta Polo Ralph Lauren infantil", marca: "Ralph Lauren", categoria: "Roupa Infantil", cor: "Azul marinho", cor2: "Branco", tamanho: "12 meses", sistema: "US", material: "Algodão pima", genero: "Infantil", condicao: "Novo com etiqueta", custoUsd: 10, freteUsd: 2, taxa: 8, precoVenda: 100, qtd: 1, local: "Caixa 3", status: "disponivel", dias: 18, fornecedor: "Ralph Lauren Outlet, Orlando", lote: "Viagem Orlando · jul/26", sku: "RL-POLO-12M", hue: 208,
+  mk({ id: 1, nome: "Camiseta Polo Ralph Lauren infantil", marca: "Ralph Lauren", categoria: "Roupa Infantil", cor: "Azul marinho", cor2: "Branco", tamanho: "12 meses", sistema: "US", material: "Algodão pima", genero: "Ambos", condicao: "Novo com etiqueta", custoUsd: 10, freteUsd: 2, taxa: 8, precoVenda: 100, qtd: 1, local: "Caixa 3", status: "disponivel", dias: 18, fornecedor: "Ralph Lauren Outlet, Orlando", lote: "Viagem Orlando · jul/26", sku: "RL-POLO-12M", hue: 208,
     descricao: "Polo clássica infantil em algodão pima, azul marinho com pônei bordado. Novinha com etiqueta, comprada em outlet nos EUA. Tamanho 12 meses.",
     tags: ["pônei bordado", "outlet", "algodão pima"], variacoes: [{ label: "12 meses · Azul marinho", sku: "RL-POLO-12M", qtd: 1 }] }),
   mk({ id: 2, nome: "Vestido Tommy Hilfiger feminino", marca: "Tommy Hilfiger", categoria: "Roupa Feminina", cor: "Azul listrado", cor2: "Branco", tamanho: "M", sistema: "US", material: "Viscose", genero: "Feminino", condicao: "Novo com etiqueta", custoUsd: 15, freteUsd: 2.5, taxa: 11, precoVenda: 180, qtd: 2, local: "Armário", status: "disponivel", dias: 24, fornecedor: "Tommy Outlet, Miami", lote: "Viagem Orlando · jul/26", sku: "TH-VEST-M", hue: 12,
@@ -91,7 +91,7 @@ export const SEED_PRODUTOS: Produto[] = [
   mk({ id: 5, nome: "Fone Apple AirPods 4", marca: "Apple", categoria: "Eletrônicos", cor: "Branco", cor2: "—", tamanho: "Único", sistema: "—", material: "Plástico", genero: "Unissex", condicao: "Novo com etiqueta", custoUsd: 119, freteUsd: 6, taxa: 78, precoVenda: 1290, qtd: 2, local: "Com a Ana", status: "reservado", dias: 6, fornecedor: "Best Buy", lote: "Pedido Amazon · ago/26", sku: "AP-AP4", hue: 240,
     descricao: "AirPods 4 selados, comprados na Best Buy. Nota fiscal americana disponível. Entrega imediata.",
     tags: ["selado", "com nota"], variacoes: [{ label: "Único", sku: "AP-AP4", qtd: 2 }] }),
-  mk({ id: 6, nome: "Conjunto Carter's body 5 peças", marca: "Carter's", categoria: "Roupa Infantil", cor: "Rosa", cor2: "Cinza", tamanho: "6 meses", sistema: "US", material: "Algodão", genero: "Infantil", condicao: "Novo com etiqueta", custoUsd: 22, freteUsd: 3, taxa: 16, precoVenda: 230, qtd: 3, local: "Caixa 3", status: "disponivel", dias: 12, fornecedor: "Carter's Outlet", lote: "Viagem Orlando · jul/26", sku: "CT-BODY-6M", hue: 330,
+  mk({ id: 6, nome: "Conjunto Carter's body 5 peças", marca: "Carter's", categoria: "Roupa Infantil", cor: "Rosa", cor2: "Cinza", tamanho: "6 meses", sistema: "US", material: "Algodão", genero: "Feminino", condicao: "Novo com etiqueta", custoUsd: 22, freteUsd: 3, taxa: 16, precoVenda: 230, qtd: 3, local: "Caixa 3", status: "disponivel", dias: 12, fornecedor: "Carter's Outlet", lote: "Viagem Orlando · jul/26", sku: "CT-BODY-6M", hue: 330,
     descricao: "Kit com 5 bodies Carter's em algodão, estampas mescladas rosa e cinza. Tamanho 6 meses, todos novos com etiqueta.",
     tags: ["kit 5 peças", "enxoval"], variacoes: [{ label: "6 meses · Rosa", sku: "CT-BODY-6M", qtd: 2 }, { label: "9 meses · Rosa", sku: "CT-BODY-9M", qtd: 1 }] }),
   mk({ id: 7, nome: "Bolsa Michael Kors couro caramelo", marca: "Michael Kors", categoria: "Acessórios", cor: "Caramelo", cor2: "Dourado", tamanho: "Único", sistema: "—", material: "Couro saffiano", genero: "Feminino", condicao: "Novo sem etiqueta", custoUsd: 96, freteUsd: 8, taxa: 64, precoVenda: 990, qtd: 1, local: "Armário", status: "disponivel", dias: 96, fornecedor: "MK Outlet", lote: "Viagem Miami · mai/26", sku: "MK-TOTE", hue: 24,
@@ -129,9 +129,6 @@ export const SEED_CATEGORIAS: Categoria[] = [
 // with AND. Chips with no group are treated as their own single-chip group.
 export const CHIPS = [
   { id: "disp", label: "Disponível", group: "status", test: (p: Produto) => p.status === "disponivel" },
-  { id: "inf", label: "Infantil", group: "categoria", test: (p: Produto) => p.categoria === "Roupa Infantil" },
-  { id: "fem", label: "Feminina", group: "categoria", test: (p: Produto) => p.categoria === "Roupa Feminina" },
-  { id: "pom", label: "Pomadas", group: "categoria", test: (p: Produto) => p.categoria === "Pomadas" },
   { id: "nike", label: "Nike", group: "marca", test: (p: Produto) => p.marca === "Nike" },
   { id: "ncet", label: "Novo c/ etiqueta", group: "condicao", test: (p: Produto) => p.condicao === "Novo com etiqueta" },
   { id: "caro", label: "Acima de R$ 500", group: "preco", test: (p: Produto) => p.preco_venda > 500 },
@@ -170,7 +167,7 @@ export const REVISAO_MOCK = [
   { label: "Cor", valor: "Azul marinho · secundária branco", conf: 0.89 },
   { label: "Tamanho", valor: "12 meses (US)", conf: 0.62 },
   { label: "Material", valor: "Algodão pima", conf: 0.55 },
-  { label: "Gênero", valor: "Infantil", conf: 0.96 },
+  { label: "Gênero", valor: "Ambos", conf: 0.96 },
   { label: "Condição", valor: "Novo com etiqueta", conf: 0.88 },
   { label: "Características", valor: "pônei bordado · gola canelada · etiqueta original", conf: 0.84 },
   { label: "SKU original (código de barras)", valor: "0 3615 41398 2", conf: 0.79 },

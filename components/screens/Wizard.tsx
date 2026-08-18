@@ -7,6 +7,7 @@ import { BRL, num } from "@/lib/helpers";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
 import { uploadPhoto } from "@/lib/upload";
 import type { Ctx } from "@/lib/context";
+import { GENEROS, type Genero } from "@/lib/types";
 
 const HUES = [12, 208, 46, 268, 150, 330, 24, 190, 96, 0, 240, 60];
 const SLOT_LABELS = ["FRENTE", "VERSO", "ETIQUETA", "DEFEITO"];
@@ -40,7 +41,7 @@ const CAMPOS_LABELS: { key: string; label: string }[] = [
 
 export default function Wizard({ ctx }: { ctx: Ctx }) {
   const { t } = useTheme();
-  const { state, setState, setProdutos, produtos, go } = ctx;
+  const { state, setState, setProdutos, produtos, categorias, go } = ctx;
   const { wz } = state;
   const [savedResumo, setSavedResumo] = useState("");
   const [fotos, setFotos] = useState<{ label: string; url: string }[]>([]);
@@ -127,7 +128,7 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
       tamanho: campoValor("tamanho"),
       sistema: "US",
       material: campoValor("material"),
-      genero: campoValor("genero"),
+      genero: (GENEROS.includes(campoValor("genero") as Genero) ? campoValor("genero") : "Unissex") as Genero,
       condicao: campoValor("condicao") || "Novo com etiqueta",
       custo_usd: num(state.custoUsd),
       frete_usd: num(state.freteUsd),
@@ -337,11 +338,36 @@ export default function Wizard({ ctx }: { ctx: Ctx }) {
                   <span style={css(`font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:${t.textTertiary}`)}>{f.label}</span>
                   <span style={css(`font-size:10px;font-weight:800;color:${low ? "#F5C518" : t.textTertiary}`)}>{Math.round(c.confianca * 100)}%</span>
                 </div>
-                <input
-                  value={c.valor}
-                  onChange={(e) => editarCampo(f.key, e.target.value)}
-                  style={css(`background:none;border:none;outline:none;color:${t.textPrimary};font-size:14px;font-weight:700;letter-spacing:-.01em;width:100%`)}
-                />
+                {f.key === "categoria" || f.key === "genero" ? (
+                  <select
+                    value={
+                      f.key === "categoria"
+                        ? categorias.some((cat) => cat.nome === c.valor)
+                          ? c.valor
+                          : ""
+                        : GENEROS.includes(c.valor as any)
+                        ? c.valor
+                        : ""
+                    }
+                    onChange={(e) => editarCampo(f.key, e.target.value)}
+                    style={css(`background:none;border:none;outline:none;color:${t.textPrimary};font-size:14px;font-weight:700;letter-spacing:-.01em;width:100%`)}
+                  >
+                    <option value="" disabled>
+                      Selecione…
+                    </option>
+                    {(f.key === "categoria" ? categorias.map((cat) => cat.nome) : GENEROS).map((o) => (
+                      <option key={o} value={o}>
+                        {o}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    value={c.valor}
+                    onChange={(e) => editarCampo(f.key, e.target.value)}
+                    style={css(`background:none;border:none;outline:none;color:${t.textPrimary};font-size:14px;font-weight:700;letter-spacing:-.01em;width:100%`)}
+                  />
+                )}
               </div>
             );
           })}

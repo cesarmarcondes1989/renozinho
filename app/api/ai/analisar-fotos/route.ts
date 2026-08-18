@@ -72,7 +72,7 @@ visualmente).
 
 Campos: nome (nome de anúncio sugerido), marca, categoria (ex.: Roupa Infantil, Roupa Feminina, Roupa
 Masculina, Calçados, Eletrônicos, Acessórios), cor (cor primária), cor_secundaria, tamanho, material,
-genero (Infantil/Feminino/Masculino/Unissex), condicao (ex.: Novo com etiqueta, Novo sem etiqueta,
+genero (Feminino/Masculino/Ambos/Unissex — faixa etária como "infantil" NÃO entra aqui, deve ir na categoria, ex. "Roupa Infantil"), condicao (ex.: Novo com etiqueta, Novo sem etiqueta,
 Seminovo, Usado), caracteristicas (detalhes notáveis separados por " · "), descricao_anuncio (2-3 frases
 descrevendo a peça para um anúncio de venda).
 

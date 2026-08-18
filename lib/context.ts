@@ -20,6 +20,8 @@ export interface AppState {
   selId: number;
   query: string;
   chips: string[];
+  filtroCategoria: string;
+  filtroGenero: string;
   sort: string;
   mode: "grid" | "list";
   wz: number;
@@ -45,6 +47,8 @@ export const initialState: AppState = {
   selId: 1,
   query: "",
   chips: [],
+  filtroCategoria: "",
+  filtroGenero: "",
   sort: "recente",
   mode: "grid",
   wz: 1,
