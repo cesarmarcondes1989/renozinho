@@ -13,8 +13,11 @@ export default function Home({ ctx }: { ctx: Ctx }) {
   const ativos = produtos.filter((p) => p.status !== "vendido");
   const totalCusto = ativos.reduce((s, p) => s + p.custo_total * p.qtd, 0);
   const totalVenda = ativos.reduce((s, p) => s + p.preco_venda * p.qtd, 0);
-  const totalPecas = produtos.reduce((s, p) => s + p.qtd, 0);
-  const estoqueBaixo = produtos.filter((p) => p.qtd <= 1).length;
+  const totalPecas = ativos.reduce((s, p) => s + p.qtd, 0);
+  // "Últimas unidades" = ainda tem estoque, mas está acabando. Peça já vendida
+  // (qtd 0) não é estoque baixo, é estoque zerado — antes ela entrava aqui e
+  // inflava o número.
+  const estoqueBaixo = ativos.filter((p) => p.qtd > 0 && p.qtd <= 1).length;
 
   const agora = new Date();
   const vendasMes = vendas.filter((v) => {
@@ -22,7 +25,9 @@ export default function Home({ ctx }: { ctx: Ctx }) {
     return d.getFullYear() === agora.getFullYear() && d.getMonth() === agora.getMonth();
   });
   const lucroMes = vendasMes.reduce((s, v) => s + Number(v.lucro), 0);
-  const paradas = produtos
+  // Só faz sentido cobrar giro de peça que ainda está parada aqui; peça já
+  // vendida não está "parada há mais tempo".
+  const paradas = ativos
     .slice()
     .sort((a, b) => diasParado(b.created_at) - diasParado(a.created_at))
     .slice(0, 5);
@@ -47,7 +52,7 @@ export default function Home({ ctx }: { ctx: Ctx }) {
             `font-size:11px;font-weight:700;color:${t.accent};background:${t.accentSoftBg};border:1px solid ${t.accentSoftBorder};border-radius:999px;padding:6px 11px`
           )}
         >
-          {totalPecas} peças
+          {totalPecas} {totalPecas === 1 ? "peça" : "peças"}
         </div>
       </div>
 
