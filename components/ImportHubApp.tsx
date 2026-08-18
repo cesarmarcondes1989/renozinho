@@ -228,36 +228,39 @@ function ImportHubShell() {
             // indicator inset already provides the breathing room, so adding a
             // fixed gap on top of it just wastes another 10px, the way native
             // iOS tab bars don't.
-            `flex:none;border-top:1px solid ${t.border};background:${t.bg};backdrop-filter:blur(12px);padding:5px 10px max(7px,var(--safe-bottom));display:flex;align-items:center;gap:4px`
+            `flex:none;border-top:1px solid ${t.border};background:${t.bg};backdrop-filter:blur(12px);padding:4px 6px max(6px,var(--safe-bottom));display:flex;align-items:stretch;gap:2px`
           )}
         >
-          {navDef.map((n) => {
-            const on = activeNav === n.id;
+          {/* Five flat, equal-width tabs. The oversized "+" pill and the card
+              background behind the active tab used to force the bar ~15px
+              taller than the tallest label needs. */}
+          {[...navDef, { id: "wizard" as View, label: "Nova", glyph: "＋" }].map((n) => {
+            const on = n.id === "wizard" ? state.view === "wizard" : activeNav === n.id;
             return (
               <button
                 key={n.id}
-                onClick={() => go(n.id)}
+                onClick={() =>
+                  n.id === "wizard"
+                    ? setState({ view: "wizard", wz: 1, fotos: 2, custoUsd: "10", cotacao: "5.42", freteUsd: "2", outros: "8", precoVenda: "100" })
+                    : go(n.id)
+                }
                 style={css(
-                  `flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;background:${
-                    on ? t.bgCard : "none"
-                  };border:none;border-radius:12px;cursor:pointer;color:${on ? t.accent : t.textTertiary}`
+                  `flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 1px;background:none;border:none;cursor:pointer;color:${
+                    on ? t.accent : t.textTertiary
+                  }`
                 )}
               >
-                <span style={css("font-size:16px;line-height:1")}>{n.glyph}</span>
-                <span style={css("font-size:9.5px;font-weight:700;letter-spacing:.01em")}>{n.label}</span>
+                <span style={css("font-size:17px;line-height:1")}>{n.glyph}</span>
+                <span
+                  style={css(
+                    `font-size:9.5px;font-weight:${on ? 800 : 600};letter-spacing:.01em;line-height:1.1;white-space:nowrap`
+                  )}
+                >
+                  {n.label}
+                </span>
               </button>
             );
           })}
-          <button
-            onClick={() => setState({ view: "wizard", wz: 1, fotos: 2, custoUsd: "10", cotacao: "5.42", freteUsd: "2", outros: "8", precoVenda: "100" })}
-            style={css(
-              `width:54px;height:46px;flex:none;background:${t.accent};color:${t.accentText};border:none;border-radius:14px;font-size:21px;font-weight:800;cursor:pointer;box-shadow:0 6px 20px ${
-                name === "dark" ? "rgba(198,255,79,.2)" : "rgba(37,99,235,.25)"
-              }`
-            )}
-          >
-            +
-          </button>
         </div>
       )}
     </div>
