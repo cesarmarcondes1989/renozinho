@@ -174,33 +174,6 @@ export const REVISAO_MOCK = [
   { label: "Descrição para anúncio", valor: "Polo clássica infantil em algodão pima, azul marinho com pônei bordado. Novinha com etiqueta, comprada em outlet nos EUA. Tamanho 12 meses.", conf: 0.92 },
 ];
 
-export const VENDAS_MES = [
-  { cat: "Pomadas", mes: "mar", n: 9, receita: 1800, lucro: 820 },
-  { cat: "Roupa Infantil", mes: "abr", n: 7, receita: 1420, lucro: 610 },
-  { cat: "Acessórios", mes: "mai", n: 4, receita: 2380, lucro: 900 },
-  { cat: "Eletrônicos", mes: "jun", n: 3, receita: 3480, lucro: 1010 },
-  { cat: "Roupa Feminina", mes: "jul", n: 6, receita: 1180, lucro: 520 },
-  { cat: "Calçados", mes: "ago", n: 2, receita: 1590, lucro: 430 },
-];
-
-export const CAT_PERF = [
-  { cat: "Pomadas", vendidas: 21, receita: 4120, lucro: 1880, giro: 11 },
-  { cat: "Roupa Infantil", vendidas: 18, receita: 3640, lucro: 1490, giro: 16 },
-  { cat: "Acessórios", vendidas: 9, receita: 5210, lucro: 1980, giro: 38 },
-  { cat: "Eletrônicos", vendidas: 6, receita: 6740, lucro: 1720, giro: 8 },
-  { cat: "Roupa Feminina", vendidas: 14, receita: 2380, lucro: 960, giro: 29 },
-  { cat: "Calçados", vendidas: 5, receita: 3980, lucro: 1040, giro: 52 },
-  { cat: "Roupa Masculina", vendidas: 3, receita: 1120, lucro: 310, giro: 74 },
-];
-
-export const CANAL_PERF = [
-  { canal: "Instagram", pct: 44, receita: 9840 },
-  { canal: "WhatsApp", pct: 26, receita: 5820 },
-  { canal: "Shopee", pct: 16, receita: 3580 },
-  { canal: "Mercado Livre", pct: 9, receita: 2010 },
-  { canal: "Presencial", pct: 5, receita: 1120 },
-];
-
 export const SIMILARES_MOCK = [
   { id: 1, score: 94, motivo: "mesma marca, mesma categoria, cor azul marinho" },
   { id: 6, score: 78, motivo: "roupa infantil, algodão, faixa de preço próxima" },

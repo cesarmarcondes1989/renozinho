@@ -1,4 +1,4 @@
-import type { Produto, Categoria } from "./types";
+import type { Produto, Categoria, Venda } from "./types";
 
 export type View =
   | "home"
@@ -72,6 +72,8 @@ export interface Ctx {
   setProdutos: React.Dispatch<React.SetStateAction<Produto[]>>;
   categorias: Categoria[];
   setCategorias: React.Dispatch<React.SetStateAction<Categoria[]>>;
+  vendas: Venda[];
+  setVendas: React.Dispatch<React.SetStateAction<Venda[]>>;
   go: (v: View) => void;
   openPeca: (id: number) => void;
   supabaseConfigured: boolean;

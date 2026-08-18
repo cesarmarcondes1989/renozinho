@@ -56,11 +56,13 @@ export interface Categoria {
 
 export interface Venda {
   id?: number;
-  product_id: number;
+  product_id: number | null;
   preco_final: number;
   canal: string;
   taxa_canal: number;
   custo_total_no_momento: number;
   lucro: number;
   vendido_em: string;
+  categoria?: string | null;
+  produto_nome?: string | null;
 }

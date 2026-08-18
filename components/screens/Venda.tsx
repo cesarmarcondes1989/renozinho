@@ -10,7 +10,7 @@ import type { Ctx } from "@/lib/context";
 
 export default function Venda({ ctx }: { ctx: Ctx }) {
   const { t } = useTheme();
-  const { produtos, setProdutos, state, setState, go } = ctx;
+  const { produtos, setProdutos, vendas, setVendas, state, setState, go } = ctx;
   const sel = produtos.find((p) => p.id === state.selId) || produtos[0];
   if (!sel) return null;
 
@@ -30,16 +30,21 @@ export default function Venda({ ctx }: { ctx: Ctx }) {
     const novaQtd = Math.max(0, sel.qtd - 1);
     const novoStatus = novaQtd === 0 ? ("vendido" as const) : sel.status;
 
+    const novaVenda = {
+      product_id: sel.id,
+      preco_final: vp,
+      canal: state.canal,
+      taxa_canal: canalObj.taxa,
+      custo_total_no_momento: sel.custo_total,
+      lucro: lucroVenda,
+      categoria: sel.categoria,
+      produto_nome: sel.nome,
+    };
+
     if (supabase) {
-      await supabase.from("sales").insert({
-        product_id: sel.id,
-        preco_final: vp,
-        canal: state.canal,
-        taxa_canal: canalObj.taxa,
-        custo_total_no_momento: sel.custo_total,
-        lucro: lucroVenda,
-      });
+      const { data } = await supabase.from("sales").insert(novaVenda).select().single();
       await supabase.from("products").update({ qtd: novaQtd, status: novoStatus }).eq("id", sel.id);
+      setVendas((prev) => prev.concat(data ? (data as any) : { ...novaVenda, vendido_em: new Date().toISOString() }));
     }
 
     setProdutos((prev) => prev.map((p) => (p.id === sel.id ? { ...p, qtd: novaQtd, status: novoStatus } : p)));

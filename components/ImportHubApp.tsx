@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { css } from "@/lib/css";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
 import { SEED_PRODUTOS, SEED_CATEGORIAS } from "@/lib/seed";
-import type { Produto, Categoria } from "@/lib/types";
+import type { Produto, Categoria, Venda as VendaRow } from "@/lib/types";
 import { initialState, type AppState, type Ctx, type View } from "@/lib/context";
 import { ThemeContext, useTheme, useThemeState } from "@/lib/theme";
 
@@ -66,6 +66,7 @@ function ImportHubShell() {
   const { t, name, toggle } = useTheme();
   const [produtos, setProdutos] = useState<Produto[]>(SEED_PRODUTOS);
   const [categorias, setCategorias] = useState<Categoria[]>(SEED_CATEGORIAS);
+  const [vendas, setVendas] = useState<VendaRow[]>([]);
   const [loaded, setLoaded] = useState(!supabaseConfigured);
   const [state, setStateRaw] = useState<AppState>(initialState);
 
@@ -77,9 +78,10 @@ function ImportHubShell() {
     if (!supabase) return;
     let cancelled = false;
     (async () => {
-      const [{ data: prodRows, error: prodErr }, { data: catRows, error: catErr }] = await Promise.all([
+      const [{ data: prodRows, error: prodErr }, { data: catRows, error: catErr }, { data: saleRows, error: saleErr }] = await Promise.all([
         supabase.from("products").select("*").order("id"),
         supabase.from("categories").select("*").order("id"),
+        supabase.from("sales").select("*").order("vendido_em"),
       ]);
       if (cancelled) return;
       // Trust whatever the real database says — including a genuinely empty
@@ -97,6 +99,9 @@ function ImportHubShell() {
         setCategorias(
           catRows.map((c: any) => ({ id: c.id, nome: c.nome, icone: c.icone, hue: c.hue, subs: c.subs ?? [] }))
         );
+      }
+      if (!saleErr && saleRows) {
+        setVendas(saleRows as VendaRow[]);
       }
       setLoaded(true);
     })();
@@ -124,6 +129,8 @@ function ImportHubShell() {
     setProdutos,
     categorias,
     setCategorias,
+    vendas,
+    setVendas,
     go,
     openPeca,
     supabaseConfigured,
