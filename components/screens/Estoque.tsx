@@ -18,7 +18,29 @@ const SORTS = [
 export default function Estoque({ ctx }: { ctx: Ctx }) {
   const { t } = useTheme();
   const { produtos, categorias, state, setState, openPeca } = ctx;
-  const { query, chips, filtroCategoria, filtroGenero, sort, mode } = state;
+  const { query, chips, sort, mode } = state;
+
+  // Categoria/gênero são chips dinâmicos (categoria vem das categorias reais
+  // cadastradas, gênero vem do enum fixo) inseridos logo após "Disponível",
+  // combinando com os demais chips estáticos via OR dentro do grupo / AND
+  // entre grupos — mesma lógica de sempre, só que agora com esses dois
+  // grupos adicionais em vez de dois <select> separados.
+  const allChips = [
+    CHIPS[0],
+    ...categorias.map((c) => ({
+      id: `cat-${c.nome}`,
+      label: c.nome,
+      group: "categoria",
+      test: (p: Produto) => p.categoria === c.nome,
+    })),
+    ...GENEROS.map((g) => ({
+      id: `gen-${g}`,
+      label: g,
+      group: "genero",
+      test: (p: Produto) => p.genero === g,
+    })),
+    ...CHIPS.slice(1),
+  ];
 
   const q = norm(query);
   let list = produtos.filter((p) => {
@@ -26,15 +48,13 @@ export default function Estoque({ ctx }: { ctx: Ctx }) {
       const hay = norm([p.nome, p.marca, p.descricao, p.sku, p.local, p.categoria, (p.tags || []).join(" ")].join(" "));
       if (!hay.includes(q) && !q.split(" ").every((t) => hay.includes(t))) return false;
     }
-    if (filtroCategoria && p.categoria !== filtroCategoria) return false;
-    if (filtroGenero && p.genero !== filtroGenero) return false;
-    const selected = chips.map((id) => CHIPS.find((c) => c.id === id)!);
+    const selected = chips.map((id) => allChips.find((c) => c.id === id)!).filter(Boolean);
     const byGroup = new Map<string, typeof selected>();
     for (const c of selected) {
       const key = c.group || c.id;
       byGroup.set(key, (byGroup.get(key) || []).concat(c));
     }
-    // OR within a group (e.g. "Infantil" or "Feminina"), AND across groups.
+    // OR within a group (e.g. two categorias, or two gêneros), AND across groups.
     return [...byGroup.values()].every((group) => group.some((c) => c.test(p)));
   });
   const sorter = SORTS.find((s) => s.id === sort) || SORTS[0];
@@ -81,42 +101,8 @@ export default function Estoque({ ctx }: { ctx: Ctx }) {
             {grid ? "▤" : "▦"}
           </button>
         </div>
-        <div style={css("display:flex;gap:7px")}>
-          <select
-            value={filtroCategoria}
-            onChange={(e) => setState({ filtroCategoria: e.target.value })}
-            style={css(
-              `flex:1;min-width:0;background:${t.bgCard};border:1px solid ${filtroCategoria ? t.accent : t.borderStrong};color:${
-                filtroCategoria ? t.accent : t.textBright
-              };border-radius:12px;padding:9px 10px;font-size:11.5px;font-weight:700;cursor:pointer`
-            )}
-          >
-            <option value="">Todas as categorias</option>
-            {categorias.map((c) => (
-              <option key={c.nome} value={c.nome}>
-                {c.nome}
-              </option>
-            ))}
-          </select>
-          <select
-            value={filtroGenero}
-            onChange={(e) => setState({ filtroGenero: e.target.value })}
-            style={css(
-              `flex:1;min-width:0;background:${t.bgCard};border:1px solid ${filtroGenero ? t.accent : t.borderStrong};color:${
-                filtroGenero ? t.accent : t.textBright
-              };border-radius:12px;padding:9px 10px;font-size:11.5px;font-weight:700;cursor:pointer`
-            )}
-          >
-            <option value="">Todos os gêneros</option>
-            {GENEROS.map((g) => (
-              <option key={g} value={g}>
-                {g}
-              </option>
-            ))}
-          </select>
-        </div>
         <div style={css("display:flex;gap:7px;overflow-x:auto;padding-bottom:2px")}>
-          {CHIPS.map((c) => {
+          {allChips.map((c) => {
             const on = chips.includes(c.id);
             return (
               <button
@@ -226,7 +212,7 @@ export default function Estoque({ ctx }: { ctx: Ctx }) {
           <div style={css("font-size:14px;font-weight:700")}>Nada encontrado</div>
           <div style={css(`font-size:12px;color:${t.textSecondary};max-width:240px;line-height:1.5`)}>Tente outra palavra ou limpe os filtros ativos.</div>
           <button
-            onClick={() => setState({ chips: [], query: "", filtroCategoria: "", filtroGenero: "" })}
+            onClick={() => setState({ chips: [], query: "" })}
             style={css(`margin-top:6px;background:${t.bgCard};border:1px solid ${t.borderStrong};color:${t.accent};border-radius:12px;padding:10px 16px;font-size:12.5px;font-weight:700;cursor:pointer`)}
           >
             Limpar filtros
