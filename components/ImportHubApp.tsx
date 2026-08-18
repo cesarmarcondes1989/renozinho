@@ -152,7 +152,7 @@ function ImportHubShell() {
     return (
       <div
         style={css(
-          `height:100dvh;width:100vw;background:${t.bg};color:${t.textPrimary};display:flex;align-items:center;justify-content:center`
+          `position:fixed;inset:0;background:${t.bg};color:${t.textPrimary};display:flex;align-items:center;justify-content:center`
         )}
       >
         <span style={{ fontSize: 13, fontWeight: 700, color: `${t.textSecondary}` }}>Carregando…</span>
@@ -163,7 +163,12 @@ function ImportHubShell() {
   return (
     <div
       style={css(
-        `height:100dvh;width:100vw;background:${t.bg};color:${t.textPrimary};display:flex;flex-direction:column;overflow:hidden;padding-top:var(--safe-top);padding-left:var(--safe-left);padding-right:var(--safe-right)`
+        // `position:fixed;inset:0` instead of `height:100dvh;width:100vw`:
+        // on iOS standalone (installed PWA) with viewport-fit=cover, 100dvh
+        // can stop short of the physical bottom edge, leaving an uncovered
+        // strip around the home indicator. inset:0 pins the shell to the real
+        // viewport bounds, and 100vw is avoided since it ignores scrollbars.
+        `position:fixed;inset:0;background:${t.bg};color:${t.textPrimary};display:flex;flex-direction:column;overflow:hidden;padding-top:var(--safe-top);padding-left:var(--safe-left);padding-right:var(--safe-right)`
       )}
     >
       <div

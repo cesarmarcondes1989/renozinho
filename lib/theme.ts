@@ -106,6 +106,25 @@ export function useThemeState(): ThemeCtxValue {
 
   const t = useMemo(() => THEMES[name], [name]);
 
+  // Paint <html>/<body> with the APP's theme background, not the system's.
+  // Without this, someone whose phone is in light mode but who picked the
+  // dark theme in-app gets a white page behind a black app — and every pixel
+  // the app shell doesn't physically cover (notch/home-indicator strips in an
+  // installed PWA, overscroll rubber-banding) shows up as a bright band.
+  // Also drives the browser/status-bar chrome color via <meta name=theme-color>.
+  useEffect(() => {
+    document.documentElement.style.backgroundColor = t.bg;
+    document.body.style.backgroundColor = t.bg;
+    document.documentElement.style.colorScheme = name;
+    let meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.setAttribute("name", "theme-color");
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute("content", t.bg);
+  }, [t, name]);
+
   return { name, t, toggle, setName };
 }
 

@@ -75,16 +75,8 @@ export default function Estoque({ ctx }: { ctx: Ctx }) {
               e.preventDefault();
               (document.activeElement as HTMLElement | null)?.blur();
             }}
-            style={css(`flex:1;display:flex;align-items:center;gap:9px;background:${t.bgCard};border:1px solid ${t.borderStrong};border-radius:14px;padding:0 13px;height:46px`)}
+            style={css(`flex:1;display:flex;align-items:center;gap:8px;background:${t.bgCard};border:1px solid ${t.borderStrong};border-radius:14px;padding:0 5px 0 13px;height:46px`)}
           >
-            <button
-              type="submit"
-              title="Buscar"
-              aria-label="Buscar"
-              style={css(`background:none;border:none;color:${t.textTertiary};font-size:14px;cursor:pointer;padding:0;display:flex`)}
-            >
-              ⌕
-            </button>
             <input
               value={query}
               onChange={(e) => setState({ query: e.target.value })}
@@ -97,11 +89,22 @@ export default function Estoque({ ctx }: { ctx: Ctx }) {
               <button
                 type="button"
                 onClick={() => setState({ query: "" })}
-                style={css(`background:${t.border};border:none;color:${t.textTertiary};width:22px;height:22px;border-radius:999px;cursor:pointer;font-size:12px`)}
+                aria-label="Limpar busca"
+                style={css(`flex:none;background:${t.border};border:none;color:${t.textTertiary};width:24px;height:24px;border-radius:999px;cursor:pointer;font-size:13px`)}
               >
                 ×
               </button>
             )}
+            <button
+              type="submit"
+              title="Buscar"
+              aria-label="Buscar"
+              style={css(
+                `flex:none;width:36px;height:36px;border-radius:11px;background:${t.accent};color:${t.accentText};border:none;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center`
+              )}
+            >
+              ⌕
+            </button>
           </form>
           <button
             onClick={() => setState({ view: "buscafoto", bfEstado: "camera" })}
