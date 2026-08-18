@@ -171,29 +171,42 @@ function ImportHubShell() {
         `position:fixed;inset:0;background:${t.bg};color:${t.textPrimary};display:flex;flex-direction:column;overflow:hidden;padding-top:var(--safe-top);padding-left:var(--safe-left);padding-right:var(--safe-right)`
       )}
     >
+      {/* Single tight row. The old header wrapped the long title + tagline onto
+          several lines and pushed the theme button to its own row, eating 130px
+          of an 844px phone screen before any content was drawn. */}
       <div
         style={css(
-          `flex:none;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid ${t.border}`
+          `flex:none;padding:9px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid ${t.border}`
         )}
       >
-        <div style={css("display:flex;align-items:baseline;gap:12px")}>
-          <span style={css("font-size:19px;font-weight:800;letter-spacing:-.02em")}>Renozinho Muambeiro</span>
-          <span style={css(`font-size:11.5px;font-weight:500;color:${t.textSecondary}`)}>
-            Estoque e revenda de importados{" "}
-            {!supabaseConfigured && "· dados de exemplo (Supabase não configurado)"}
-          </span>
-        </div>
+        <span
+          style={css(
+            "font-size:17px;font-weight:800;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0"
+          )}
+        >
+          Renozinho Muambeiro
+        </span>
         <button
           onClick={toggle}
           title={name === "dark" ? "Ativar tema claro" : "Ativar tema escuro"}
           aria-label={name === "dark" ? "Ativar tema claro" : "Ativar tema escuro"}
           style={css(
-            `flex:none;width:36px;height:36px;border-radius:999px;background:${t.bgCard};border:1px solid ${t.border};color:${t.textPrimary};font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center`
+            `flex:none;width:34px;height:34px;border-radius:999px;background:${t.bgCard};border:1px solid ${t.border};color:${t.textPrimary};font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center`
           )}
         >
           {name === "dark" ? "☀" : "☾"}
         </button>
       </div>
+
+      {!supabaseConfigured && (
+        <div
+          style={css(
+            `flex:none;padding:5px 14px;font-size:10.5px;font-weight:600;color:${t.textSecondary};background:${t.bgCard};border-bottom:1px solid ${t.border};text-align:center`
+          )}
+        >
+          Dados de exemplo · Supabase não configurado
+        </div>
+      )}
 
       <div style={css("flex:1;min-height:0;display:flex;overflow:hidden")}>
         <div style={css("flex:1;min-width:0;overflow-y:auto")}>
@@ -211,7 +224,11 @@ function ImportHubShell() {
       {showTabBar && (
         <div
           style={css(
-            `flex:none;border-top:1px solid ${t.border};background:${t.bg};backdrop-filter:blur(12px);padding:8px 10px calc(10px + var(--safe-bottom));display:flex;align-items:center;gap:4px`
+            // `max(7px, safe-bottom)` rather than `10px + safe-bottom`: the home
+            // indicator inset already provides the breathing room, so adding a
+            // fixed gap on top of it just wastes another 10px, the way native
+            // iOS tab bars don't.
+            `flex:none;border-top:1px solid ${t.border};background:${t.bg};backdrop-filter:blur(12px);padding:5px 10px max(7px,var(--safe-bottom));display:flex;align-items:center;gap:4px`
           )}
         >
           {navDef.map((n) => {
@@ -221,12 +238,12 @@ function ImportHubShell() {
                 key={n.id}
                 onClick={() => go(n.id)}
                 style={css(
-                  `flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 2px;background:${
+                  `flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;background:${
                     on ? t.bgCard : "none"
-                  };border:none;border-radius:14px;cursor:pointer;color:${on ? t.accent : t.textTertiary}`
+                  };border:none;border-radius:12px;cursor:pointer;color:${on ? t.accent : t.textTertiary}`
                 )}
               >
-                <span style={css("font-size:17px;line-height:1")}>{n.glyph}</span>
+                <span style={css("font-size:16px;line-height:1")}>{n.glyph}</span>
                 <span style={css("font-size:9.5px;font-weight:700;letter-spacing:.01em")}>{n.label}</span>
               </button>
             );
@@ -234,7 +251,7 @@ function ImportHubShell() {
           <button
             onClick={() => setState({ view: "wizard", wz: 1, fotos: 2, custoUsd: "10", cotacao: "5.42", freteUsd: "2", outros: "8", precoVenda: "100" })}
             style={css(
-              `width:58px;height:52px;flex:none;background:${t.accent};color:${t.accentText};border:none;border-radius:16px;font-size:22px;font-weight:800;cursor:pointer;box-shadow:0 6px 20px ${
+              `width:54px;height:46px;flex:none;background:${t.accent};color:${t.accentText};border:none;border-radius:14px;font-size:21px;font-weight:800;cursor:pointer;box-shadow:0 6px 20px ${
                 name === "dark" ? "rgba(198,255,79,.2)" : "rgba(37,99,235,.25)"
               }`
             )}
