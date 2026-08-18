@@ -25,7 +25,14 @@ export default function Estoque({ ctx }: { ctx: Ctx }) {
       const hay = norm([p.nome, p.marca, p.descricao, p.sku, p.local, p.categoria, (p.tags || []).join(" ")].join(" "));
       if (!hay.includes(q) && !q.split(" ").every((t) => hay.includes(t))) return false;
     }
-    return chips.every((id) => CHIPS.find((c) => c.id === id)!.test(p));
+    const selected = chips.map((id) => CHIPS.find((c) => c.id === id)!);
+    const byGroup = new Map<string, typeof selected>();
+    for (const c of selected) {
+      const key = c.group || c.id;
+      byGroup.set(key, (byGroup.get(key) || []).concat(c));
+    }
+    // OR within a group (e.g. "Infantil" or "Feminina"), AND across groups.
+    return [...byGroup.values()].every((group) => group.some((c) => c.test(p)));
   });
   const sorter = SORTS.find((s) => s.id === sort) || SORTS[0];
   list = list.slice().sort(sorter.cmp);

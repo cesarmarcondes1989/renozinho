@@ -124,15 +124,18 @@ export const SEED_CATEGORIAS: Categoria[] = [
   { nome: "Pomadas", icone: "●", hue: 46, subs: ["Assadura", "Vitaminas"] },
 ];
 
+// `group` puts mutually-exclusive chips (e.g. two different categories) in the
+// same bucket: chips in the same group combine with OR, different groups combine
+// with AND. Chips with no group are treated as their own single-chip group.
 export const CHIPS = [
-  { id: "disp", label: "Disponível", test: (p: Produto) => p.status === "disponivel" },
-  { id: "inf", label: "Infantil", test: (p: Produto) => p.categoria === "Roupa Infantil" },
-  { id: "fem", label: "Feminina", test: (p: Produto) => p.categoria === "Roupa Feminina" },
-  { id: "pom", label: "Pomadas", test: (p: Produto) => p.categoria === "Pomadas" },
-  { id: "nike", label: "Nike", test: (p: Produto) => p.marca === "Nike" },
-  { id: "ncet", label: "Novo c/ etiqueta", test: (p: Produto) => p.condicao === "Novo com etiqueta" },
-  { id: "caro", label: "Acima de R$ 500", test: (p: Produto) => p.preco_venda > 500 },
-  { id: "cx3", label: "Caixa 3", test: (p: Produto) => p.local === "Caixa 3" },
+  { id: "disp", label: "Disponível", group: "status", test: (p: Produto) => p.status === "disponivel" },
+  { id: "inf", label: "Infantil", group: "categoria", test: (p: Produto) => p.categoria === "Roupa Infantil" },
+  { id: "fem", label: "Feminina", group: "categoria", test: (p: Produto) => p.categoria === "Roupa Feminina" },
+  { id: "pom", label: "Pomadas", group: "categoria", test: (p: Produto) => p.categoria === "Pomadas" },
+  { id: "nike", label: "Nike", group: "marca", test: (p: Produto) => p.marca === "Nike" },
+  { id: "ncet", label: "Novo c/ etiqueta", group: "condicao", test: (p: Produto) => p.condicao === "Novo com etiqueta" },
+  { id: "caro", label: "Acima de R$ 500", group: "preco", test: (p: Produto) => p.preco_venda > 500 },
+  { id: "cx3", label: "Caixa 3", group: "local", test: (p: Produto) => p.local === "Caixa 3" },
 ];
 
 export const CANAIS = [
